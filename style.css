@@ -357,3 +357,38 @@ section { padding: 100px 20px; scroll-margin-top: 90px; }
 .skeleton-principal { width: 100%; height: 400px; } /* Home Esquerda */
 .skeleton-secundario { width: 100%; height: 180px; } /* Home Direita */
 .skeleton-card-evento { width: 100%; height: 350px; } /* Página Eventos.html */
+
+/* --- BOTÃO PARTILHAR WHATSAPP --- */
+.card-header-evento {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.btn-share-whatsapp {
+    background-color: #25d366; /* Cor oficial do WhatsApp */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.btn-share-whatsapp:hover {
+    background-color: #128c7e;
+    transform: scale(1.1);
+}
+
+/* Ajuste para o botão na Home (dentro do overlay) */
+.info-overlay .btn-share-whatsapp {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid white;
+}

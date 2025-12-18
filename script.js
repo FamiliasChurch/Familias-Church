@@ -105,16 +105,24 @@ async function carregarEventos() {
 
         const formatarData = (d) => new Date(d).toLocaleDateString('pt-BR', {day:'2-digit', month:'long', hour:'2-digit', minute:'2-digit'});
 
-        const renderCard = (ev) => `
-            <div class="card-evento ${ev.is_special ? 'destaque-especial' : ''}">
-                <img src="${ev.image}" alt="${ev.title}" loading="lazy">
-                <div class="card-info">
-                    <span>${formatarData(ev.date)}</span>
-                    <h3>${ev.title}</h3>
-                    <div class="card-texto">${ev.body}</div>
+        const renderCard = (ev) => {
+            const dataFormatada = formatarData(ev.date);
+            return `
+                <div class="card-evento ${ev.is_special ? 'destaque-especial' : ''}">
+                    <img src="${ev.image}" alt="${ev.title}" loading="lazy">
+                    <div class="card-info">
+                        <div class="card-header-evento">
+                            <span>${dataFormatada}</span>
+                            <button class="btn-share-whatsapp" onclick="compartilharWhatsapp('${ev.title}', '${dataFormatada}')" title="Partilhar no WhatsApp">
+                                📲
+                            </button>
+                        </div>
+                        <h3>${ev.title}</h3>
+                        <div class="card-texto">${ev.body}</div>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        };
 
         // Substitui os skeletons pelo conteúdo ou mensagem de vazio
         listaProximos.innerHTML = proximos.length ? proximos.map(renderCard).join('') : '<p class="aviso-vazio">Nenhum evento próximo agendado.</p>';
@@ -148,7 +156,22 @@ async function carregarDestaquesHome() {
         const proximos = eventos.filter(e => new Date(e.date) >= agora);
 
         if (proximos.length === 0) {
-            containerPrincipal.innerHTML = "<p>Nenhum evento agendado no momento.</p>";
+            // No trecho de Render Principal da index:
+        containerPrincipal.innerHTML = `
+            <div class="card-principal">
+                <img src="${principal.image}" alt="${principal.title}">
+                <div class="info-overlay">
+                    <span>PRÓXIMO DESTAQUE</span>
+                    <h3>${principal.title}</h3>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a href="eventos.html" class="btn-copy" style="width: fit-content; margin-top:15px">Saiba Mais</a>
+                        <button class="btn-share-whatsapp" style="margin-top:15px" onclick="compartilharWhatsapp('${principal.title}', '${new Date(principal.date).toLocaleDateString('pt-BR')}')">
+                            📲
+                        </button>
+                    </div>
+                </div>
+            </div>`
+        ;
             containerSecundarios.innerHTML = "";
             return;
         }
@@ -256,4 +279,18 @@ function formatarMoeda(i) {
     v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
     v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
     i.value = v;
+}
+
+// --- FUNÇÃO PARA PARTILHAR NO WHATSAPP ---
+function compartilharWhatsapp(titulo, data) {
+    const urlSite = window.location.href; // Pega o link da página atual
+    const mensagem = encodeURIComponent(
+        `Olá! Veja este evento na Famílias Church:\n\n` +
+        `📌 *${titulo}*\n` +
+        `📅 ${data}\n\n` +
+        `Confira os detalhes no site: ${urlSite}`
+    );
+    
+    // Abre o WhatsApp com a mensagem pronta
+    window.open(`https://api.whatsapp.com/send?text=${mensagem}`, '_blank');
 }
