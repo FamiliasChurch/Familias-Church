@@ -200,3 +200,58 @@ if (window.netlifyIdentity) {
         }
     });
 }
+
+async function carregarDestaquesHome() {
+    const repoPath = "FamiliasChurch/FamiliasChurch";
+    const folderPath = "content/eventos";
+    const agora = new Date();
+
+    try {
+        const response = await fetch(`https://api.github.com/repos/${repoPath}/contents/${folderPath}`);
+        const arquivos = await response.json();
+        const promessas = arquivos.filter(arq => arq.name.endsWith('.json'))
+                                  .map(arq => fetch(arq.download_url).then(res => res.json()));
+        const eventos = await Promise.all(promessas);
+
+        // 1. Filtrar apenas próximos
+        const proximos = eventos.filter(e => new Date(e.date) >= agora);
+        
+        // 2. Achar o destaque (Encontro com Deus)
+        const principal = proximos.find(e => e.is_special) || proximos[0];
+        
+        // 3. Pegar os outros dois (que não sejam o principal)
+        const secundarios = proximos.filter(e => e !== principal).slice(0, 2);
+
+        // Renderizar Principal
+        if (principal) {
+            document.getElementById('evento-principal').innerHTML = `
+                <div class="card-principal">
+                    <img src="${principal.image}" alt="${principal.title}">
+                    <div class="info-overlay">
+                        <span>PRÓXIMO DESTAQUE</span>
+                        <h3>${principal.title}</h3>
+                        <a href="eventos.html" class="btn-copy" style="width: fit-content; margin-top:15px">Saiba Mais</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Renderizar Secundários
+        document.getElementById('eventos-secundarios').innerHTML = secundarios.map(ev => `
+            <div class="card-secundario">
+                <img src="${ev.image}">
+                <div class="info-pequena">
+                    <h4 style="color: var(--cor-primaria)">${ev.title}</h4>
+                    <p style="font-size: 0.8rem; color: #666">${new Date(ev.date).toLocaleDateString('pt-BR')}</p>
+                    <a href="eventos.html" style="color: var(--cor-destaque); font-weight: bold; font-size: 0.8rem">SAIBA MAIS →</a>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (err) { console.error("Erro nos destaques:", err); }
+}
+
+// Chamar a função se estiver na Home
+if (document.getElementById('evento-principal')) {
+    carregarDestaquesHome();
+}
