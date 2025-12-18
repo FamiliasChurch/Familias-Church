@@ -292,22 +292,50 @@ section { padding: 100px 20px; scroll-margin-top: 90px; }
 }
 
 /* --- ESTILO DOS CARDS DE EVENTO --- */
+/* Grid de Eventos */
 .grid-eventos {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 30px;
-    margin-top: 30px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
 }
 
+/* Estilo do Card */
 .card-evento {
     background: #fff;
-    border-radius: 15px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: var(--sombra-suave);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     transition: transform 0.3s ease;
-    border: 1px solid #eee;
-    display: flex;
-    flex-direction: column;
+}
+
+.card-evento:hover { transform: translateY(-5px); }
+
+.card-img img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-info { padding: 20px; }
+
+/* Destaque para Encontro com Deus */
+.destaque-encontro {
+    border: 2px solid #daa520; /* Dourado */
+}
+
+.badge {
+    background: #daa520;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+/* Estilo para eventos passados (mais discretos) */
+.evento-passado {
+    filter: grayscale(0.8);
+    opacity: 0.8;
 }
 
 .card-evento:hover { transform: translateY(-10px); box-shadow: var(--sombra-hover); }

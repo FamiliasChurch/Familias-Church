@@ -76,63 +76,78 @@ document.addEventListener('DOMContentLoaded', function() {
    2. LÓGICA DO BLOG/EVENTOS (PÁGINA EVENTOS.HTML)
 ========================================================== */
 async function carregarEventos() {
-    const repoPath = "FamiliasChurch/FamiliasChurch"; 
-    const folderPath = "content/eventos";
+    // Lista dos arquivos JSON na pasta content/eventos
+    // IMPORTANTE: Adicione o nome dos novos arquivos aqui sempre que criá-los
+    const arquivos = [
+        '2025-12-18-encontro-com-deus.json',
+        // 'outro-evento.json', 
+    ];
+
     const listaProximos = document.getElementById('lista-proximos');
     const listaPassados = document.getElementById('lista-passados');
     const agora = new Date();
 
     try {
-        const response = await fetch(`https://api.github.com/repos/${repoPath}/contents/${folderPath}`);
-        if (!response.ok) throw new Error("Pasta de eventos não encontrada");
-        
-        const arquivos = await response.json();
-        const arquivosJson = arquivos.filter(arq => arq.name.endsWith('.json'));
+        // 1. Buscar todos os arquivos JSON
+        const promessas = arquivos.map(file => fetch(`./content/eventos/${file}`).then(res => res.json()));
+        const eventos = await promessas;
 
-        const promessas = arquivosJson.map(arq => fetch(arq.download_url).then(res => res.json()));
-        const eventos = await Promise.all(promessas);
+        // 2. Separar e Ordenar
+        const proximos = eventos.filter(ev => new Date(ev.data) >= agora);
+        const passados = eventos.filter(ev => new Date(ev.data) < agora);
 
-        const proximos = eventos.filter(e => new Date(e.date) >= agora);
-        const passados = eventos.filter(e => new Date(e.date) < agora);
-
-        // Ordenação
-        proximos.sort((a, b) => {
-            if (a.is_special && !b.is_special) return -1;
-            if (!a.is_special && b.is_special) return 1;
-            return new Date(a.date) - new Date(b.date);
-        });
-        passados.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        const formatarData = (d) => new Date(d).toLocaleDateString('pt-BR', {day:'2-digit', month:'long', hour:'2-digit', minute:'2-digit'});
-
-        const renderCard = (ev) => {
-            const dataFormatada = formatarData(ev.date);
-            return `
-                <div class="card-evento ${ev.is_special ? 'destaque-especial' : ''}">
-                    <img src="${ev.image}" alt="${ev.title}" loading="lazy">
-                    <div class="card-info">
-                        <div class="card-header-evento">
-                            <span>${dataFormatada}</span>
-                            <button class="btn-share-whatsapp" onclick="compartilharWhatsapp('${ev.title}', '${dataFormatada}')" title="Partilhar no WhatsApp">
-                                📲
-                            </button>
-                        </div>
-                        <h3>${ev.title}</h3>
-                        <div class="card-texto">${ev.body}</div>
-                    </div>
-                </div>
-            `;
+        const ordenador = (a, b) => {
+            // Regra 1: "Encontro com Deus" sempre no topo
+            if (a.isEncontroComDeus !== b.isEncontroComDeus) {
+                return a.isEncontroComDeus ? -1 : 1;
+            }
+            // Regra 2: Ordenar por data (mais próximos primeiro)
+            return new Date(a.data) - new Date(b.data);
         };
 
-        // Substitui os skeletons pelo conteúdo ou mensagem de vazio
-        listaProximos.innerHTML = proximos.length ? proximos.map(renderCard).join('') : '<p class="aviso-vazio">Nenhum evento próximo agendado.</p>';
-        listaPassados.innerHTML = passados.length ? passados.map(renderCard).join('') : '<p class="aviso-vazio">Sem histórico disponível.</p>';
+        // 3. Renderizar
+        renderizar(proximos.sort(ordenador), listaProximos);
+        renderizar(passados.sort(ordenador), listaPassados, true);
 
-    } catch (err) {
-        console.error("Erro no Blog:", err);
-        if(listaProximos) listaProximos.innerHTML = '<p>Erro ao carregar eventos.</p>';
+    } catch (erro) {
+        console.error("Erro ao carregar eventos:", erro);
+        listaProximos.innerHTML = "<p>Erro ao carregar eventos.</p>";
     }
 }
+
+function renderizar(lista, container, isPast = false) {
+    container.innerHTML = ""; // Limpa os skeletons
+
+    if (lista.length === 0) {
+        container.innerHTML = "<p>Nenhum evento agendado no momento.</p>";
+        return;
+    }
+
+    lista.forEach(evento => {
+        const dataFormatada = new Date(evento.data).toLocaleString('pt-BR', {
+            day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+
+        const card = `
+            <div class="card-evento ${evento.isEncontroComDeus ? 'destaque-encontro' : ''} ${isPast ? 'evento-passado' : ''}">
+                <div class="card-img">
+                    <img src="${evento.imagem}" alt="${evento.titulo}">
+                </div>
+                <div class="card-info">
+                    ${evento.isEncontroComDeus ? '<span class="badge">Destaque</span>' : ''}
+                    <h3>${evento.titulo}</h3>
+                    <p class="data">${dataFormatada}</p>
+                    <p class="descricao">${evento.descricao ? evento.descricao.substring(0, 100) + '...' : ''}</p>
+                    ${!isPast ? `<a href="#" class="btn-card">Saber mais</a>` : ''}
+                </div>
+            </div>
+        `;
+        container.innerHTML += card;
+    });
+}
+
+// Inicia a função
+carregarEventos();
 
 /* ==========================================================
    3. DESTAQUES DA HOME (PÁGINA INDEX.HTML)
