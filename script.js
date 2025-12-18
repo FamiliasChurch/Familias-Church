@@ -51,17 +51,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- CARREGAMENTO DE EVENTOS (SE ESTIVER NA PÁGINA EVENTOS) ---
+    // --- REDIRECIONAMENTO ADMIN (NETLIFY IDENTITY) ---
+    if (window.netlifyIdentity) {
+        window.netlifyIdentity.on("init", user => {
+            if (!user) {
+                window.netlifyIdentity.on("login", () => {
+                    document.location.href = "/admin/";
+                });
+            }
+        });
+    }
+
+    // --- DISPARAR CARREGAMENTO DE CONTEÚDO DINÂMICO ---
     if (document.getElementById('lista-proximos')) {
-        carregarEventos();
+        carregarEventos(); // Carrega página de eventos.html
+    }
+    
+    if (document.getElementById('evento-principal')) {
+        carregarDestaquesHome(); // Carrega destaques da index.html
     }
 });
 
 /* ==========================================================
-   2. LÓGICA DO BLOG/EVENTOS (VIA GITHUB API)
+   2. LÓGICA DO BLOG/EVENTOS (PÁGINA EVENTOS.HTML)
 ========================================================== */
 async function carregarEventos() {
-    const repoPath = "FamiliasChurch/FamiliasChurch"; // Baseado no seu repositório
+    const repoPath = "FamiliasChurch/FamiliasChurch"; 
     const folderPath = "content/eventos";
     const listaProximos = document.getElementById('lista-proximos');
     const listaPassados = document.getElementById('lista-passados');
@@ -74,21 +89,18 @@ async function carregarEventos() {
         const arquivos = await response.json();
         const arquivosJson = arquivos.filter(arq => arq.name.endsWith('.json'));
 
-        // Busca o conteúdo de cada arquivo JSON
         const promessas = arquivosJson.map(arq => fetch(arq.download_url).then(res => res.json()));
         const eventos = await Promise.all(promessas);
 
-        // Separação e Ordenação
         const proximos = eventos.filter(e => new Date(e.date) >= agora);
         const passados = eventos.filter(e => new Date(e.date) < agora);
 
-        // Regra Especial: Encontro com Deus no topo, depois data próxima
+        // Ordenação
         proximos.sort((a, b) => {
             if (a.is_special && !b.is_special) return -1;
             if (!a.is_special && b.is_special) return 1;
             return new Date(a.date) - new Date(b.date);
         });
-
         passados.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         const formatarData = (d) => new Date(d).toLocaleDateString('pt-BR', {day:'2-digit', month:'long', hour:'2-digit', minute:'2-digit'});
@@ -104,19 +116,80 @@ async function carregarEventos() {
             </div>
         `;
 
-        listaProximos.innerHTML = proximos.length ? proximos.map(renderCard).join('') : '<p>Nenhum evento próximo.</p>';
-        listaPassados.innerHTML = passados.length ? passados.map(renderCard).join('') : '<p>Sem histórico disponível.</p>';
+        // Substitui os skeletons pelo conteúdo ou mensagem de vazio
+        listaProximos.innerHTML = proximos.length ? proximos.map(renderCard).join('') : '<p class="aviso-vazio">Nenhum evento próximo agendado.</p>';
+        listaPassados.innerHTML = passados.length ? passados.map(renderCard).join('') : '<p class="aviso-vazio">Sem histórico disponível.</p>';
 
     } catch (err) {
         console.error("Erro no Blog:", err);
+        if(listaProximos) listaProximos.innerHTML = '<p>Erro ao carregar eventos.</p>';
     }
 }
 
 /* ==========================================================
-   3. FUNÇÕES GLOBAIS (CHAMADAS VIA ONCLICK NO HTML)
+   3. DESTAQUES DA HOME (PÁGINA INDEX.HTML)
+========================================================== */
+async function carregarDestaquesHome() {
+    const repoPath = "FamiliasChurch/FamiliasChurch";
+    const folderPath = "content/eventos";
+    const agora = new Date();
+    const containerPrincipal = document.getElementById('evento-principal');
+    const containerSecundarios = document.getElementById('eventos-secundarios');
+
+    try {
+        const response = await fetch(`https://api.github.com/repos/${repoPath}/contents/${folderPath}`);
+        if (!response.ok) throw new Error("Erro API");
+        
+        const arquivos = await response.json();
+        const promessas = arquivos.filter(arq => arq.name.endsWith('.json'))
+                                  .map(arq => fetch(arq.download_url).then(res => res.json()));
+        const eventos = await Promise.all(promessas);
+
+        const proximos = eventos.filter(e => new Date(e.date) >= agora);
+
+        if (proximos.length === 0) {
+            containerPrincipal.innerHTML = "<p>Nenhum evento agendado no momento.</p>";
+            containerSecundarios.innerHTML = "";
+            return;
+        }
+
+        const principal = proximos.find(e => e.is_special) || proximos[0];
+        const secundarios = proximos.filter(e => e !== principal).slice(0, 2);
+
+        // Render Principal
+        containerPrincipal.innerHTML = `
+            <div class="card-principal">
+                <img src="${principal.image}" alt="${principal.title}">
+                <div class="info-overlay">
+                    <span>PRÓXIMO DESTAQUE</span>
+                    <h3>${principal.title}</h3>
+                    <a href="eventos.html" class="btn-copy" style="width: fit-content; margin-top:15px">Saiba Mais</a>
+                </div>
+            </div>
+        `;
+
+        // Render Secundários
+        containerSecundarios.innerHTML = secundarios.map(ev => `
+            <div class="card-secundario">
+                <img src="${ev.image}">
+                <div class="info-pequena">
+                    <h4 style="color: var(--cor-primaria)">${ev.title}</h4>
+                    <p style="font-size: 0.8rem; color: #666">${new Date(ev.date).toLocaleDateString('pt-BR')}</p>
+                    <a href="eventos.html" style="color: var(--cor-destaque); font-weight: bold; font-size: 0.8rem">SAIBA MAIS →</a>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (err) { 
+        console.error("Erro nos destaques:", err);
+        containerPrincipal.innerHTML = "";
+    }
+}
+
+/* ==========================================================
+   4. FUNÇÕES GLOBAIS (CHAMADAS VIA ONCLICK NO HTML)
 ========================================================== */
 
-// Alternar Unidades (PR/SC) na Home
 function trocarUnidade(estado) {    
     const contentPR = document.getElementById('conteudo-pr');
     const contentSC = document.getElementById('conteudo-sc');
@@ -136,7 +209,6 @@ function trocarUnidade(estado) {
     }
 }
 
-// Abas de Ministérios
 function ativarAba(elemento) {
     const botoes = document.querySelectorAll('.tab-btn');
     botoes.forEach(btn => btn.classList.remove('active'));
@@ -155,12 +227,10 @@ function ativarAba(elemento) {
     }, 200);
 }
 
-// Alternar Oferta/Dízimo
 function mostrarOpcao(tipo) {
     const boxOferta = document.getElementById('box-oferta');
     const boxDizimo = document.getElementById('box-dizimo');
     const botoes = document.querySelectorAll('.btn-toggle');
-
     botoes.forEach(btn => btn.classList.remove('active'));
 
     if (tipo === 'oferta') {
@@ -174,7 +244,6 @@ function mostrarOpcao(tipo) {
     }
 }
 
-// Copiar Pix e Formatar Moeda
 function copiarPix(id) {
     const texto = document.getElementById(id).innerText;
     navigator.clipboard.writeText(texto).then(() => alert("Chave Pix copiada!"));
@@ -187,71 +256,4 @@ function formatarMoeda(i) {
     v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
     v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
     i.value = v;
-}
-
-if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-        if (!user) {
-            window.netlifyIdentity.on("login", () => {
-                document.location.href = "/admin/";
-            });
-        } 
-        else {
-        }
-    });
-}
-
-async function carregarDestaquesHome() {
-    const repoPath = "FamiliasChurch/FamiliasChurch";
-    const folderPath = "content/eventos";
-    const agora = new Date();
-
-    try {
-        const response = await fetch(`https://api.github.com/repos/${repoPath}/contents/${folderPath}`);
-        const arquivos = await response.json();
-        const promessas = arquivos.filter(arq => arq.name.endsWith('.json'))
-                                  .map(arq => fetch(arq.download_url).then(res => res.json()));
-        const eventos = await Promise.all(promessas);
-
-        // 1. Filtrar apenas próximos
-        const proximos = eventos.filter(e => new Date(e.date) >= agora);
-        
-        // 2. Achar o destaque (Encontro com Deus)
-        const principal = proximos.find(e => e.is_special) || proximos[0];
-        
-        // 3. Pegar os outros dois (que não sejam o principal)
-        const secundarios = proximos.filter(e => e !== principal).slice(0, 2);
-
-        // Renderizar Principal
-        if (principal) {
-            document.getElementById('evento-principal').innerHTML = `
-                <div class="card-principal">
-                    <img src="${principal.image}" alt="${principal.title}">
-                    <div class="info-overlay">
-                        <span>PRÓXIMO DESTAQUE</span>
-                        <h3>${principal.title}</h3>
-                        <a href="eventos.html" class="btn-copy" style="width: fit-content; margin-top:15px">Saiba Mais</a>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Renderizar Secundários
-        document.getElementById('eventos-secundarios').innerHTML = secundarios.map(ev => `
-            <div class="card-secundario">
-                <img src="${ev.image}">
-                <div class="info-pequena">
-                    <h4 style="color: var(--cor-primaria)">${ev.title}</h4>
-                    <p style="font-size: 0.8rem; color: #666">${new Date(ev.date).toLocaleDateString('pt-BR')}</p>
-                    <a href="eventos.html" style="color: var(--cor-destaque); font-weight: bold; font-size: 0.8rem">SAIBA MAIS →</a>
-                </div>
-            </div>
-        `).join('');
-
-    } catch (err) { console.error("Erro nos destaques:", err); }
-}
-
-// Chamar a função se estiver na Home
-if (document.getElementById('evento-principal')) {
-    carregarDestaquesHome();
 }
