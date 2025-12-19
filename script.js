@@ -6,7 +6,7 @@ const CONFIG = {
     repo: "FamiliasChurch/FamiliasChurch"
 };
 
-let cacheConteudo = []; 
+let cacheConteudo = [];
 let synth = window.speechSynthesis;
 let utterance = null;
 
@@ -16,7 +16,7 @@ let utterance = null;
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Carrega Componentes (Header/Footer)
     await carregarComponentes();
-    
+
     // 2. Inicializa UI básica (Menu Mobile)
     initMenuMobile();
 
@@ -69,7 +69,7 @@ function initMenuMobile() {
     const toggleState = () => {
         const isActive = menu.classList.toggle('active');
         btn.classList.toggle('active');
-        
+
         // Sincroniza com a trava de scroll do CSS
         if (isActive) {
             document.body.classList.add('menu-open');
@@ -105,9 +105,9 @@ async function carregarEventos() {
     const eventos = await fetchConteudo('eventos');
     const agora = new Date();
     const ordenador = (a, b) => (a.is_special !== b.is_special ? (a.is_special ? -1 : 1) : new Date(a.date) - new Date(b.date));
-    
+
     const proximos = eventos.filter(e => new Date(e.date) >= agora).sort(ordenador);
-    const passados = eventos.filter(e => new Date(e.date) < agora).sort((a,b) => new Date(b.date) - new Date(a.date));
+    const passados = eventos.filter(e => new Date(e.date) < agora).sort((a, b) => new Date(b.date) - new Date(a.date));
 
     renderizarCards(proximos, 'lista-proximos');
     renderizarCards(passados, 'lista-passados', true);
@@ -139,7 +139,7 @@ async function carregarFeed() {
     const folders = ['devocionais', 'estudos'];
     const promessas = folders.map(f => fetchConteudo(`publicacoes/${f}`));
     const resultados = await Promise.all(promessas);
-    cacheConteudo = resultados.flat().sort((a,b) => new Date(b.date) - new Date(a.date));
+    cacheConteudo = resultados.flat().sort((a, b) => new Date(b.date) - new Date(a.date));
     renderizarFeed(cacheConteudo);
 }
 
@@ -194,7 +194,7 @@ function iniciarLeitura() {
 function pararLeitura() { synth.cancel(); document.getElementById('btnOuvir')?.classList.remove('hidden'); document.getElementById('btnParar')?.classList.add('hidden'); }
 function fecharLeitura() { pararLeitura(); document.getElementById('modalLeitura').style.display = "none"; document.body.style.overflow = "auto"; }
 function copiarPix(id) { navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => alert("Chave Pix copiada!")); }
-function formatarMoeda(i) { let v = i.value.replace(/\D/g,''); v = (v/100).toFixed(2).replace(".", ",").replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,").replace(/(\d)(\d{3}),/g, "$1.$2,"); i.value = v; }
+function formatarMoeda(i) { let v = i.value.replace(/\D/g, ''); v = (v / 100).toFixed(2).replace(".", ",").replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,").replace(/(\d)(\d{3}),/g, "$1.$2,"); i.value = v; }
 
 function trocarUnidade(unidade) {
     const c = { pr: { b: 'btn-pr', ct: 'conteudo-pr', h: ['btn-sc', 'conteudo-sc'] }, sc: { b: 'btn-sc', ct: 'conteudo-sc', h: ['btn-pr', 'conteudo-pr'] } }[unidade];
@@ -221,7 +221,7 @@ function initFormOracao() {
 async function carregarDestaquesHome() {
     const eventos = await fetchConteudo('eventos');
     const agora = new Date();
-    const proximos = eventos.filter(e => new Date(e.date) >= agora).sort((a,b) => (a.is_special ? -1 : 1));
+    const proximos = eventos.filter(e => new Date(e.date) >= agora).sort((a, b) => (a.is_special ? -1 : 1));
     const cp = document.getElementById('evento-principal');
     if (!cp || proximos.length === 0) return;
 
