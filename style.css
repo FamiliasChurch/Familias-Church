@@ -586,3 +586,41 @@ section { padding: 100px 20px; scroll-margin-top: 90px; }
     display: none;
 }
 
+/* --- ESTILO PÁGINA 404 --- */
+.error-404 {
+    height: 80vh; /* Ocupa a maior parte da tela */
+        display: flex;
+            align-items: center;
+                justify-content: center;
+                    text-align: center;
+                        background: linear-gradient(rgba(22, 58, 48, 0.05), rgba(22, 58, 48, 0.02));
+                        }
+
+                        .error-content {
+                            max-width: 600px;
+                                margin: 0 auto;
+                                }
+
+                                .error-code {
+                                    font-family: var(--font-display);
+                                        font-size: 8rem;
+                                            color: var(--cor-destaque);
+                                                line-height: 1;
+                                                    display: block;
+                                                        margin-bottom: 10px;
+                                                            opacity: 0.5;
+                                                            }
+
+                                                            .error-404 h1 {
+                                                                font-family: var(--font-display);
+                                                                    font-size: 3rem;
+                                                                        color: var(--cor-primaria);
+                                                                            margin-bottom: 20px;
+                                                                            }
+
+                                                                            .error-404 p {
+                                                                                font-size: 1.1rem;
+                                                                                    color: var(--cor-texto-suave);
+                                                                                        margin-bottom: 30px;
+                                                                                        }
+                                                                                        
