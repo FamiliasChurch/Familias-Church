@@ -548,3 +548,33 @@ section { padding: 100px 20px; scroll-margin-top: 90px; }
     font-size: 0.7rem;
     letter-spacing: 1px;
 }
+
+.controles-audio {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-audio {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+}
+
+.btn-audio:hover {
+    background-color: var(--cor-destaque);
+    color: white;
+    border-color: var(--cor-destaque);
+}
+
+.hidden {
+    display: none;
+}
+
