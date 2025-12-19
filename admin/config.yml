@@ -1,16 +1,18 @@
 backend:
   name: git-gateway
-  branch: main # Certifique-se de que sua branch principal se chama main
+  branch: main
 
-media_folder: "assets/img/eventos"
-public_folder: "/assets/img/eventos"
+# Configuração de Mídia Global
+media_folder: "assets/img/upload"
+public_folder: "/assets/img/upload"
 
 collections:
+  # --- COLEÇÃO DE EVENTOS ---
   - name: "eventos"
     label: "Eventos"
     folder: "content/eventos"
     create: true
-    extension: json # Salvaremos como JSON para facilitar a leitura pelo site
+    extension: json
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
     fields:
       - { label: "Título do Evento", name: "title", widget: "string" }
@@ -18,3 +20,31 @@ collections:
       - { label: "É Encontro com Deus?", name: "is_special", widget: "boolean", default: false }
       - { label: "Imagem de Capa", name: "image", widget: "image" }
       - { label: "Descrição Detalhada", name: "body", widget: "markdown" }
+
+  # --- COLEÇÃO DE DEVOCIONAIS ---
+  - name: "devocionais"
+    label: "Devocionais"
+    folder: "content/publicacoes/devocionais"
+    create: true
+    extension: json
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - { label: "Tipo", name: "tipo", widget: "hidden", default: "devocional" }
+      - { label: "Título da Mensagem", name: "title", widget: "string" }
+      - { label: "Data de Publicação", name: "date", widget: "datetime" }
+      - { label: "Autor", name: "autor", widget: "string" }
+      - { label: "Conteúdo da Mensagem", name: "body", widget: "markdown" }
+
+  # --- COLEÇÃO DE ESTUDOS BÍBLICOS ---
+  - name: "estudos"
+    label: "Estudos Bíblicos"
+    folder: "content/publicacoes/estudos"
+    create: true
+    extension: json
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - { label: "Tipo", name: "tipo", widget: "hidden", default: "estudo" }
+      - { label: "Título do Estudo", name: "title", widget: "string" }
+      - { label: "Data de Publicação", name: "date", widget: "datetime" }
+      - { label: "Autor", name: "autor", widget: "string" }
+      - { label: "Conteúdo do Estudo", name: "body", widget: "markdown" }
