@@ -1,0 +1,38 @@
+// Substitua sua função de salvar por esta:
+async function publicarNoGithub(payload) {
+    const STATUS = document.getElementById('status');
+    STATUS.innerText = "🚀 Enviando para o céu... digo, para o servidor...";
+
+    // CONFIGURAÇÃO DO REPOSITÓRIO
+    const GITHUB_TOKEN = "SEU_TOKEN_AQUI"; // ⚠️ Em produção, use um backend. Para estudo, serve aqui.
+    const REPO = "FamiliasChurch/FamiliasChurch"; 
+    const PATH = `content/publicacoes/${payload.tipo}/${Date.now()}-${payload.title.toLowerCase().replace(/ /g, '-')}.json`;
+
+    // A API do GitHub exige conteúdo em Base64
+    const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+
+    try {
+        const response = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: `Nova publicação: ${payload.title} por ${payload.autor}`,
+                content: contentBase64
+            })
+        });
+
+        if (response.ok) {
+            STATUS.innerHTML = "✅ **Publicado com sucesso!** O site será atualizado em instantes.";
+            document.getElementById('formConteudo').reset();
+        } else {
+            throw new Error("Erro na API do GitHub");
+        }
+    } catch (erro) {
+        console.error(erro);
+        STATUS.innerText = "❌ Erro ao publicar. Verifique sua conexão ou token.";
+    }
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
