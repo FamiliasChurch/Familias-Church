@@ -1,8 +1,11 @@
 /* ==========================================================
    CONFIGURAÇÕES GERAIS
 ========================================================== */
+// Detecta se a página atual está dentro de uma subpasta (como /admin/)
+const prefixo = window.location.pathname.includes('/admin/') ? '../' : './';
+
 const CONFIG = {
-    basePath: './content',
+    basePath: `${prefixo}content`,
     repo: "FamiliasChurch/FamiliasChurch"
 };
 
@@ -43,17 +46,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /* ==========================================================
-   1. CORE: COMPONENTIZAÇÃO E UI
+   1. CORE: COMPONENTIZAÇÃO (CORRIGIDO)
 ========================================================== */
 async function carregarComponentes() {
     const itens = [{ id: 'header', file: 'header' }, { id: 'footer', file: 'footer' }];
+    
     const promessas = itens.map(async item => {
         const el = document.getElementById(item.id);
         if (el) {
             try {
-                const res = await fetch(`./components/${item.file}.html`);
+                // USA O PREFIXO PARA ACHAR A PASTA COMPONENTS NA RAIZ
+                const res = await fetch(`${prefixo}components/${item.file}.html`);
+                if (!res.ok) throw new Error();
                 el.innerHTML = await res.text();
-            } catch (e) { console.error(`Erro ao carregar ${item.file}`); }
+            } catch (e) { 
+                console.error(`Erro ao carregar ${item.file}: Verifique se o arquivo existe em /components/`); 
+            }
         }
     });
     await Promise.all(promessas);
