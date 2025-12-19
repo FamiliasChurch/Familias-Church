@@ -423,18 +423,23 @@ function abrirLeitura(titulo) {
     const modal = document.getElementById('modalLeitura');
     const display = document.getElementById('conteudo-completo-leitura');
 
+    // A MÁGICA: Converte o texto Markdown do campo 'body' em HTML puro
+    const conteudoHTML = marked.parse(pub.body);
+
     display.innerHTML = `
-        <small>${pub.tipo.toUpperCase()}</small>
-        <h1 style="font-size: 3rem; margin: 20px 0">${pub.title}</h1>
-        <p><strong>Por: ${pub.autor}</strong> - ${new Date(pub.date).toLocaleDateString('pt-BR')}</p>
-        <hr>
-        <div class="texto-completo" style="font-size: 1.2rem; white-space: pre-wrap;">
-            ${pub.body}
+        <small class="tipo-tag">${pub.tipo.toUpperCase()}</small>
+        <h1 style="font-size: 3rem; margin: 20px 0; font-family: 'Playfair Display', serif;">${pub.title}</h1>
+        <p><strong>Por: ${pub.autor}</strong> — ${new Date(pub.date).toLocaleDateString('pt-BR')}</p>
+        <hr style="opacity: 0.2; margin: 30px 0;">
+        <div class="texto-completo" style="font-size: 1.25rem;">
+            ${conteudoHTML}
         </div>
     `;
+    
     modal.style.display = "block";
-    document.body.style.overflow = "hidden"; // Trava o scroll do fundo
+    document.body.style.overflow = "hidden"; // Impede o scroll do fundo enquanto lê
 }
+
 
 function fecharLeitura() {
     document.getElementById('modalLeitura').style.display = "none";
