@@ -396,42 +396,26 @@ function atualizarDadosUsuario(user) {
     if (!user) return;
 
     const meta = user.user_metadata;
-    const idadeCalculada = calcularIdade(meta.nascimento);
+    
+    // 1. Prioriza a foto do Netlify/Google. Se não existir, usa o placeholder cinza.
+    const fotoUrl = meta.avatar_url || "https://via.placeholder.com/120";
 
-    // Elementos do Menu Flutuante (Header)
-    const elementos = {
-        nome: document.getElementById('userName'),
-        email: document.getElementById('userEmail'),
-        cargo: document.getElementById('userRole'),
-        idade: document.getElementById('userAge'),
-        avatarPequeno: document.getElementById('userAvatarSmall'),
-        avatarGrande: document.getElementById('userAvatarLarge')
-    };
+    // 2. Atualiza Menu Flutuante (Header)
+    const elAvatarSmall = document.getElementById('userAvatarSmall');
+    const elAvatarLarge = document.getElementById('userAvatarLarge');
+    const elNome = document.getElementById('userName');
+    
+    if (elAvatarSmall) elAvatarSmall.src = fotoUrl;
+    if (elAvatarLarge) elAvatarLarge.src = fotoUrl;
+    if (elNome) elNome.innerText = `Olá, ${meta.full_name || 'Membro'}!`;
 
-    // Preenchimento Automático do Menu
-    if (elementos.nome) elementos.nome.innerText = `Olá, ${meta.full_name || 'Membro'}!`;
-    if (elementos.email) elementos.email.innerText = user.email;
-    if (elementos.cargo) elementos.cargo.innerText = meta.cargo || "Membro";
-    if (elementos.idade) elementos.idade.innerText = idadeCalculada;
-    if (elementos.avatarPequeno && meta.avatar_url) elementos.avatarPequeno.src = meta.avatar_url;
-    if (elementos.avatarGrande && meta.avatar_url) elementos.avatarGrande.src = meta.avatar_url;
-    if (meta.avatar_url) {    
-        document.getElementById('avatarImg').src = meta.avatar_url;
-        document.getElementById('userAvatarSmall').src = meta.avatar_url;
-    } else {
-    // Se não tiver nada, ele mantém a imagem padrão que você colocou no HTML
-    document.getElementById('avatarImg').src = "https://via.placeholder.com/120";
-    }       
-    // Sincronização com a Página de Perfil (perfil.html)
-    const perfilNome = document.getElementById('nomeUsuario');
-    const perfilCargo = document.getElementById('cargoUsuario');
-    const perfilAvatar = document.getElementById('avatarImg');
-
-    if (perfilNome) perfilNome.innerText = meta.full_name || "Membro da Família";
-    if (perfilCargo) perfilCargo.innerText = meta.cargo || "Membro";
-    if (perfilAvatar && meta.avatar_url) perfilAvatar.src = meta.avatar_url;
+    // 3. Atualiza Página de Perfil
+    const elPerfilAvatar = document.getElementById('avatarImg');
+    const elPerfilNome = document.getElementById('nomeUsuario');
+    
+    if (elPerfilAvatar) elPerfilAvatar.src = fotoUrl;
+    if (elPerfilNome) elPerfilNome.innerText = meta.full_name || "Membro da Família";
 }
-
 
 // 3. Netlify Identity
 netlifyIdentity.on('init', user => atualizarDadosUsuario(user));
