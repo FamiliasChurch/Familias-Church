@@ -26,20 +26,24 @@
                 <button class="close-btn" onclick="toggleMenu()">&times;</button>
             </div>
             <div class="card-content">
-                <div class="profile-info">
-                    <div class="avatar-large">
-                        <img id="userAvatarLarge" src="https://via.placeholder.com/80" alt="Foto Grande">
+                <div class="card-content">
+                    <div class="profile-info">
+                        <div class="avatar-large">
+                            <img id="userAvatarLarge" src="https://via.placeholder.com/80" alt="Foto Grande">
+                        </div>
+                        <h2 id="userName">Olá!</h2>
                     </div>
-                    <h2 id="userName">Olá!</h2>
+                    <div class="menu-items">
+                        <div class="menu-item">📅 Idade: <strong id="userAge">--</strong> anos</div>
+                        <div class="menu-item">🛡️ Cargo: <strong id="userRole">Membro</strong></div>
+                    </div>
+
+                    <div id="admin-actions-container" style="margin-bottom: 10px;"></div>
+
+                    <button class="action-btn-secondary" onclick="window.location.href='perfil.html'">Gerenciar sua
+                        conta</button>
+                    <button class="action-btn logout-btn" onclick="netlifyIdentity.logout()">Sair</button>
                 </div>
-                <div class="menu-items">
-                    <div class="menu-item">📅 Idade: <strong id="userAge">--</strong> anos</div>
-                    <div class="menu-item">🛡️ Cargo: <strong id="userRole">Membro</strong></div>
-                </div>
-                
-                <button class="action-btn-secondary" onclick="netlifyIdentity.open('login')">Gerenciar sua conta</button>
-                
-                <button class="action-btn logout-btn" onclick="netlifyIdentity.logout()">Sair</button>
             </div>
         </div>
         <div class="notification-wrapper">
@@ -47,7 +51,7 @@
                 <i class="fa-solid fa-bell"></i>
                 <span id="noti-count" class="badge-count hidden">0</span>
             </button>
-            
+
             <div id="noti-dropdown" class="noti-card hidden">
                 <div class="noti-header">Notificações</div>
                 <div id="noti-list" class="noti-body">

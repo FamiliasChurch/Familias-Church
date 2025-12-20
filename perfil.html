@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <title>Meu Perfil | Famílias Church</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&family=Smooch+Sans:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&family=Smooch+Sans:wght@700&display=swap"
+        rel="stylesheet">
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
+
 <body>
     <header id="header"></header>
 
@@ -24,8 +27,10 @@
                 <div class="perfil-section" style="margin-bottom: 30px;">
                     <h2 class="titulo-secao" style="font-size: 1.5rem;">Novo Pedido de Oração</h2>
                     <form id="formOracaoPerfil" style="margin-top: 15px;">
-                        <textarea id="textoOracao" placeholder="Escreve aqui o teu motivo de oração..." rows="4" required></textarea>
-                        <button type="submit" class="btn-enviar" style="padding: 10px; font-size: 0.9rem;">🙏 Enviar Pedido</button>
+                        <textarea id="textoOracao" placeholder="Escreve aqui o teu motivo de oração..." rows="4"
+                            required></textarea>
+                        <button type="submit" class="btn-enviar" style="padding: 10px; font-size: 0.9rem;">🙏 Enviar
+                            Pedido</button>
                     </form>
                     <p id="statusOracao" style="margin-top: 10px; font-size: 0.8rem; text-align: center;"></p>
                 </div>
@@ -54,9 +59,11 @@
                         <strong id="totalAnual">R$ 0,00</strong>
                     </div>
                 </div>
-                
-                <div id="adminFinanceiro" class="hidden" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
-                    <button class="action-btn-secondary" onclick="window.location.href='admin/financeiro.html'">⚙️ Gerenciar Todas as Contribuições</button>
+
+                <div id="adminFinanceiro" class="hidden"
+                    style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+                    <button class="action-btn-secondary" onclick="window.location.href='admin/financeiro.html'">⚙️
+                        Gerenciar Todas as Contribuições</button>
                 </div>
             </section>
         </div>
@@ -77,16 +84,19 @@
             const meta = user.user_metadata;
             document.getElementById('nomeUsuario').innerText = meta.full_name || "Membro da Família";
             document.getElementById('cargoUsuario').innerText = meta.cargo || "Membro";
-            if(meta.avatar_url) document.getElementById('avatarImg').src = meta.avatar_url;
-
-            // Simulação de carregamento de dados (Futuro: Buscar via API ou JSON específico)
+            if (meta.avatar_url) document.getElementById('avatarImg').src = meta.avatar_url;
+            const cargoParaPermissao = meta.cargo ? meta.cargo.toLowerCase() : "membro";
+            if (cargoParaPermissao === "admin" || cargoParaPermissao === "financeiro" || cargoParaPermissao === "pastor" || cargoParaPermissao === "apóstolo" ||) {
+                const secaoAdmin = document.getElementById('adminFinanceiro');
+                if (secaoAdmin) secaoAdmin.classList.remove('hidden');
+            }
             carregarHistoricoFake();
         });
 
         async function carregarHistoricoReal() {
             const user = netlifyIdentity.currentUser();
             const container = document.getElementById('lista-oracoes');
-            
+
             if (!user) return;
 
             try {
@@ -115,8 +125,9 @@
         }
 
         // Chame a função após o login ser confirmado
-        netlifyIdentity.on("init", user => { if(user) carregarHistoricoReal(); });
-        netlifyIdentity.on("login", user => { if(user) carregarHistoricoReal(); });
+        netlifyIdentity.on("init", user => { if (user) carregarHistoricoReal(); });
+        netlifyIdentity.on("login", user => { if (user) carregarHistoricoReal(); });
     </script>
 </body>
+
 </html>

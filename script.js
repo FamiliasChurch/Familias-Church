@@ -302,7 +302,7 @@ function initTabsMinisterios() {
             if (dados[chave]) {
                 botoes.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
+
                 // Transição visual
                 document.querySelector('.tab-content-display').style.opacity = 0;
                 setTimeout(() => {
@@ -343,7 +343,47 @@ function updateUserInfo(user) {
         document.getElementById('userAvatarLarge').src = metadata.avatar_url;
     }
 }
+// Função para atualizar a interface com os dados do usuário
+function atualizarInterfaceUsuario(user) {
+    if (user) {
+        const meta = user.user_metadata;
+        const cargo = meta.cargo ? meta.cargo.toLowerCase() : "membro";
+        const containerAcoes = document.getElementById('admin-actions-container');
 
+        // 1. Preenche os dados básicos
+        document.getElementById('userName').innerText = `Olá, ${meta.full_name || 'Membro'}!`;
+        document.getElementById('userRole').innerText = meta.cargo || "Membro";
+        if (meta.avatar_url) document.getElementById('userAvatarSmall').src = meta.avatar_url;
+
+        // 2. Limpa o container antes de adicionar novos botões
+        containerAcoes.innerHTML = '';
+
+        // 3. Regra de Acesso para Pastor e Apóstolo (Acesso Total)
+        if (cargo === "pastor" || cargo === "apóstolo" || cargo === "apostolo") {
+            containerAcoes.innerHTML = `
+                <button class="action-btn" onclick="window.location.href='publicar.html'" style="background-color: #2c3e50; margin-bottom: 5px;">
+                    📢 Painel de Publicação
+                </button>
+            `;
+        }
+        // 4. Regra de Acesso para Mídia (Apenas Eventos)
+        else if (cargo === "mídia" || cargo === "midia") {
+            containerAcoes.innerHTML = `
+                <button class="action-btn" onclick="window.location.href='publicar.html?tab=eventos'" style="background-color: #e67e22; margin-bottom: 5px;">
+                    📅 Publicar Eventos
+                </button>
+            `;
+        }
+    }
+}
+
+// Escutadores do Netlify Identity
+netlifyIdentity.on('init', user => atualizarInterfaceUsuario(user));
+netlifyIdentity.on('login', user => {
+    atualizarInterfaceUsuario(user);
+    netlifyIdentity.close(); // Fecha a janelinha de login após logar
+});
+netlifyIdentity.on('logout', () => window.location.href = 'index.html');
 // Listener do Netlify Identity
 if (window.netlifyIdentity) {
     window.netlifyIdentity.on("init", user => updateUserInfo(user));
@@ -353,7 +393,7 @@ if (window.netlifyIdentity) {
     });
     window.netlifyIdentity.on("logout", () => location.reload());
 }
-document.getElementById('formOracaoPerfil').onsubmit = async function(e) {
+document.getElementById('formOracaoPerfil').onsubmit = async function (e) {
     e.preventDefault();
     const user = netlifyIdentity.currentUser();
     const status = document.getElementById('statusOracao');
@@ -425,19 +465,19 @@ async function carregarEstatisticasFinanceiras() {
             }
         });
 
-        document.getElementById('totalMensal').innerText = `R$ ${somaMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        document.getElementById('totalAnual').innerText = `R$ ${somaAno.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        document.getElementById('totalMensal').innerText = `R$ ${somaMes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        document.getElementById('totalAnual').innerText = `R$ ${somaAno.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 
     } catch (err) {
         console.error("Erro ao calcular finanças:", err);
     }
 }
 
-document.getElementById('formDizimoReal').onsubmit = async function(e) {
+document.getElementById('formDizimoReal').onsubmit = async function (e) {
     e.preventDefault();
     const user = netlifyIdentity.currentUser();
     const btn = e.target.querySelector('button');
-    
+
     if (!user) return alert("Login necessário");
 
     btn.innerText = "⏳ A registar...";
@@ -480,12 +520,10 @@ async function checarNotificacoes() {
         // Buscamos o histórico (usando a função que já criamos antes)
         const resOracoes = await fetch(`/.netlify/functions/buscar_historico?userEmail=${user.email}`);
         const resContri = await fetch(`/.netlify/functions/buscar_contribuicoes?userEmail=${user.email}`);
-        
+
         const oracoes = await resOracoes.json();
         const contribuicoes = await resContri.json();
 
-        // Filtramos apenas o que é NOVIDADE (Status mudou mas usuário não "limpou")
-        // Dica: No JSON, você pode adicionar um campo "visto: false"
         const novidades = [
             ...oracoes.filter(o => o.status === "Lida"),
             ...contribuicoes.filter(c => c.status === "Confirmado")
@@ -494,7 +532,7 @@ async function checarNotificacoes() {
         if (novidades.length > 0) {
             countLabel.innerText = novidades.length;
             countLabel.classList.remove('hidden');
-            
+
             listContainer.innerHTML = novidades.map(n => `
                 <div class="noti-item">
                     <i class="fa-solid ${n.texto ? 'fa-hands-praying' : 'fa-circle-check'}"></i>
@@ -526,7 +564,7 @@ async function carregarMuralTestemunhos() {
 
         // Engenharia: Ordena do mais recente para o mais antigo e pega os 10 primeiros
         const dezMaisRecentes = lista
-            .sort((a, b) => new Date(b.date) - new Date(a.date)) 
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 10);
 
         container.innerHTML = dezMaisRecentes.map(t => `
@@ -538,7 +576,7 @@ async function carregarMuralTestemunhos() {
                 </div>
             </div>
         `).join('');
-        
+
         // Caso não haja testemunhos aprovados ainda
         if (dezMaisRecentes.length === 0) {
             container.innerHTML = "<p class='aviso-vazio'>Em breve, novas vitórias compartilhadas!</p>";
