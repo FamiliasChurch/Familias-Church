@@ -10,7 +10,21 @@
         // Função de bloqueio imediato
         function verificarAcessoAdmin() {
             const user = netlifyIdentity.currentUser();
-
+            if (temAcesso) {
+                // Registra o acesso apenas se ainda não foi registrado nesta sessão
+                if (!sessionStorage.getItem('acesso_registrado')) {
+                    fetch('/.netlify/functions/registrar_acesso', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            adminNome: meta.full_name || "Admin",
+                            adminEmail: user.email,
+                            cargo: meta.cargo || "Admin"
+                        })
+                    }).then(() => {
+                        sessionStorage.setItem('acesso_registrado', 'true');
+                    });
+                }
+            }
             // 1. Se não houver usuário logado, expulsa imediatamente
             if (!user) {
                 console.warn("Acesso negado: Usuário não autenticado.");

@@ -12,7 +12,23 @@
         // Função de bloqueio imediato
         function verificarAcessoAdmin() {
             const user = netlifyIdentity.currentUser();
+            // Dentro da sua função verificarAcessoAdmin(), onde 'temAcesso' for verdadeiro:
 
+            if (temAcesso) {
+                // Registra o acesso apenas se ainda não foi registrado nesta sessão
+                if (!sessionStorage.getItem('acesso_registrado')) {
+                    fetch('/.netlify/functions/registrar_acesso', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            adminNome: meta.full_name || "Admin",
+                            adminEmail: user.email,
+                            cargo: meta.cargo || "Admin"
+                        })
+                    }).then(() => {
+                        sessionStorage.setItem('acesso_registrado', 'true');
+                    });
+                }
+            }
             // 1. Se não houver usuário logado, expulsa imediatamente
             if (!user) {
                 console.warn("Acesso negado: Usuário não autenticado.");
@@ -118,7 +134,7 @@
         netlifyIdentity.on("login", user => {
             const meta = user.user_metadata;
             const cargo = (meta.cargo || "membro").toLowerCase();
-            
+
             // Restrição específica: Apenas o Financeiro e o Apóstolo têm acesso ao painel admin
             const cargosAutorizados = ["financeiro", "apóstolo", "apostolo"];
 
