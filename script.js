@@ -302,7 +302,7 @@ function initTabsMinisterios() {
             if (dados[chave]) {
                 botoes.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
+
                 // Transição visual
                 document.querySelector('.tab-content-display').style.opacity = 0;
                 setTimeout(() => {
@@ -324,26 +324,117 @@ function toggleMenu() {
 }
 
 // Atualiza as informações do usuário logado
-function updateUserInfo(user) {
+// 1. Função Matemática para calcular a idade
+function calcularIdade(dataNascimento) {
+    if (!dataNascimento) return "--";
+    const hoje = new Date();
+    const nascimento = new Date(dataNascimento);
+    let idade = hoje.getFullYear() - nascimento.getFullYear();
+    const m = hoje.getMonth() - nascimento.getMonth();
+    
+    if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
+        idade--;
+    }
+    return idade;
+}
+
+// 2. Função Principal de Sincronização
+function atualizarDadosUsuario(user) {
     if (!user) return;
 
-    // Dados básicos
-    document.getElementById('userName').innerText = `Olá, ${user.user_metadata.full_name || 'Irmão'}!`;
-    document.getElementById('userEmail').innerText = user.email;
+    const meta = user.user_metadata;
+    const idadeCalculada = calcularIdade(meta.nascimento);
 
-    // Metadados Personalizados (Cargo e Idade)
-    // No Netlify, você configura isso em Identity -> Metadata
-    const metadata = user.user_metadata;
-    document.getElementById('userRole').innerText = metadata.cargo || "Membro";
-    document.getElementById('userAge').innerText = metadata.idade || "--";
+    // Elementos do Menu Flutuante (Header)
+    const elementos = {
+        nome: document.getElementById('userName'),
+        email: document.getElementById('userEmail'),
+        cargo: document.getElementById('userRole'),
+        idade: document.getElementById('userAge'),
+        avatarPequeno: document.getElementById('userAvatarSmall'),
+        avatarGrande: document.getElementById('userAvatarLarge')
+    };
 
-    // Fotos (Se vierem do Google Login, o Netlify mapeia automaticamente)
-    if (metadata.avatar_url) {
-        document.getElementById('userAvatarSmall').src = metadata.avatar_url;
-        document.getElementById('userAvatarLarge').src = metadata.avatar_url;
+    // Preenchimento Automático do Menu
+    if (elementos.nome) elementos.nome.innerText = `Olá, ${meta.full_name || 'Membro'}!`;
+    if (elementos.email) elementos.email.innerText = user.email;
+    if (elementos.cargo) elementos.cargo.innerText = meta.cargo || "Membro";
+    if (elementos.idade) elementos.idade.innerText = idadeCalculada;
+    if (elementos.avatarPequeno && meta.avatar_url) elementos.avatarPequeno.src = meta.avatar_url;
+    if (elementos.avatarGrande && meta.avatar_url) elementos.avatarGrande.src = meta.avatar_url;
+    if (meta.avatar_url) {    
+        document.getElementById('avatarImg').src = meta.avatar_url;
+        document.getElementById('userAvatarSmall').src = meta.avatar_url;
+    } else {
+    // Se não tiver nada, ele mantém a imagem padrão que você colocou no HTML
+    document.getElementById('avatarImg').src = "https://via.placeholder.com/120";
+    }       
+    // Sincronização com a Página de Perfil (perfil.html)
+    const perfilNome = document.getElementById('nomeUsuario');
+    const perfilCargo = document.getElementById('cargoUsuario');
+    const perfilAvatar = document.getElementById('avatarImg');
+
+    if (perfilNome) perfilNome.innerText = meta.full_name || "Membro da Família";
+    if (perfilCargo) perfilCargo.innerText = meta.cargo || "Membro";
+    if (perfilAvatar && meta.avatar_url) perfilAvatar.src = meta.avatar_url;
+}
+
+
+// 3. Netlify Identity
+netlifyIdentity.on('init', user => atualizarDadosUsuario(user));
+netlifyIdentity.on('login', user => {
+    atualizarDadosUsuario(user);
+    netlifyIdentity.close();
+});
+
+// Dentro da sua função atualizarInterfaceUsuario(user):
+const meta = user.user_metadata;
+const elementoIdade = document.getElementById('userAge'); //
+
+if (elementoIdade) {
+    elementoIdade.innerText = calcularIdade(meta.nascimento);
+}
+// Função para atualizar a interface com os dados do usuário
+function atualizarInterfaceUsuario(user) {
+    if (user) {
+        const meta = user.user_metadata;
+        const cargo = meta.cargo ? meta.cargo.toLowerCase() : "membro";
+        const containerAcoes = document.getElementById('admin-actions-container');
+
+        // 1. Preenche os dados básicos
+        document.getElementById('userName').innerText = `Olá, ${meta.full_name || 'Membro'}!`;
+        document.getElementById('userRole').innerText = meta.cargo || "Membro";
+        if (meta.avatar_url) document.getElementById('userAvatarSmall').src = meta.avatar_url;
+
+        // 2. Limpa o container antes de adicionar novos botões
+        containerAcoes.innerHTML = '';
+
+        // 3. Regra de Acesso para Pastor e Apóstolo (Acesso Total)
+        if (cargo === "pastor" || cargo === "apóstolo" || cargo === "apostolo") {
+            containerAcoes.innerHTML = `
+                <button class="action-btn" onclick="window.location.href='publicar.html'" style="background-color: #2c3e50; margin-bottom: 5px;">
+                    📢 Painel de Publicação
+                </button>
+            `;
+        }
+        // 4. Regra de Acesso para Mídia (Apenas Eventos)
+        else if (cargo === "mídia" || cargo === "midia") {
+            containerAcoes.innerHTML = `
+                <button class="action-btn" onclick="window.location.href='publicar.html?tab=eventos'" style="background-color: #e67e22; margin-bottom: 5px;">
+                    📅 Publicar Eventos
+                </button>
+            `;
+        }
     }
 }
 
+// Escutadores do Netlify Identity
+netlifyIdentity.on('init', user => atualizarInterfaceUsuario(user));
+netlifyIdentity.on('login', user => {
+    atualizarInterfaceUsuario(user);
+    netlifyIdentity.close(); // Fecha a janelinha de login após logar
+});
+netlifyIdentity.on('logout', () => window.location.href = 'index.html');
 // Listener do Netlify Identity
 if (window.netlifyIdentity) {
     window.netlifyIdentity.on("init", user => updateUserInfo(user));
@@ -353,7 +444,7 @@ if (window.netlifyIdentity) {
     });
     window.netlifyIdentity.on("logout", () => location.reload());
 }
-document.getElementById('formOracaoPerfil').onsubmit = async function(e) {
+document.getElementById('formOracaoPerfil').onsubmit = async function (e) {
     e.preventDefault();
     const user = netlifyIdentity.currentUser();
     const status = document.getElementById('statusOracao');
@@ -425,19 +516,19 @@ async function carregarEstatisticasFinanceiras() {
             }
         });
 
-        document.getElementById('totalMensal').innerText = `R$ ${somaMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        document.getElementById('totalAnual').innerText = `R$ ${somaAno.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        document.getElementById('totalMensal').innerText = `R$ ${somaMes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        document.getElementById('totalAnual').innerText = `R$ ${somaAno.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 
     } catch (err) {
         console.error("Erro ao calcular finanças:", err);
     }
 }
 
-document.getElementById('formDizimoReal').onsubmit = async function(e) {
+document.getElementById('formDizimoReal').onsubmit = async function (e) {
     e.preventDefault();
     const user = netlifyIdentity.currentUser();
     const btn = e.target.querySelector('button');
-    
+
     if (!user) return alert("Login necessário");
 
     btn.innerText = "⏳ A registar...";
@@ -480,12 +571,10 @@ async function checarNotificacoes() {
         // Buscamos o histórico (usando a função que já criamos antes)
         const resOracoes = await fetch(`/.netlify/functions/buscar_historico?userEmail=${user.email}`);
         const resContri = await fetch(`/.netlify/functions/buscar_contribuicoes?userEmail=${user.email}`);
-        
+
         const oracoes = await resOracoes.json();
         const contribuicoes = await resContri.json();
 
-        // Filtramos apenas o que é NOVIDADE (Status mudou mas usuário não "limpou")
-        // Dica: No JSON, você pode adicionar um campo "visto: false"
         const novidades = [
             ...oracoes.filter(o => o.status === "Lida"),
             ...contribuicoes.filter(c => c.status === "Confirmado")
@@ -494,7 +583,7 @@ async function checarNotificacoes() {
         if (novidades.length > 0) {
             countLabel.innerText = novidades.length;
             countLabel.classList.remove('hidden');
-            
+
             listContainer.innerHTML = novidades.map(n => `
                 <div class="noti-item">
                     <i class="fa-solid ${n.texto ? 'fa-hands-praying' : 'fa-circle-check'}"></i>
@@ -526,7 +615,7 @@ async function carregarMuralTestemunhos() {
 
         // Engenharia: Ordena do mais recente para o mais antigo e pega os 10 primeiros
         const dezMaisRecentes = lista
-            .sort((a, b) => new Date(b.date) - new Date(a.date)) 
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 10);
 
         container.innerHTML = dezMaisRecentes.map(t => `
@@ -538,7 +627,7 @@ async function carregarMuralTestemunhos() {
                 </div>
             </div>
         `).join('');
-        
+
         // Caso não haja testemunhos aprovados ainda
         if (dezMaisRecentes.length === 0) {
             container.innerHTML = "<p class='aviso-vazio'>Em breve, novas vitórias compartilhadas!</p>";
@@ -549,3 +638,73 @@ async function carregarMuralTestemunhos() {
         container.innerHTML = "<p>Em breve, novas vitórias compartilhadas!</p>";
     }
 }
+
+// Variável global para o editor
+let cropper;
+const modal = document.getElementById('modalCrop');
+const imageToCrop = document.getElementById('imageToCrop');
+const fotoInput = document.getElementById('fotoInput');
+
+// 1. Detecta a escolha do arquivo e abre o editor de recorte
+fotoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            imageToCrop.src = event.target.result;
+            modal.style.display = 'flex'; // Abre o modal de ajuste
+            
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(imageToCrop, {
+                aspectRatio: 1, // Garante que a foto seja quadrada para o círculo
+                viewMode: 1,
+                guides: false
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// 2. Lógica de Upload (Integrada com sua Chave API)
+document.getElementById('btnSalvarCrop').addEventListener('click', () => {
+    const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+    const status = document.getElementById('statusUpload');
+    const user = netlifyIdentity.currentUser();
+
+    fecharModal();
+    status.innerText = "⏳ Enviando foto...";
+
+    // Transforma o recorte em um arquivo (Blob) para envio
+    canvas.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append('image', blob);
+
+        try {
+            // Upload para o ImgBB com sua chave: aa5bd2aacedeb43b6521a4f45d71b442
+            const res = await fetch('https://api.imgbb.com/1/upload?key=aa5bd2aacedeb43b6521a4f45d71b442', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                const novaUrlFoto = data.data.url;
+
+                // Atualiza o Netlify Identity do usuário logado
+                user.update({ data: { avatar_url: novaUrlFoto } }).then((updatedUser) => {
+                    // Atualiza as imagens na tela instantaneamente
+                    if(document.getElementById('avatarImg')) document.getElementById('avatarImg').src = novaUrlFoto;
+                    if(document.getElementById('userAvatarSmall')) document.getElementById('userAvatarSmall').src = novaUrlFoto;
+                    if(document.getElementById('userAvatarLarge')) document.getElementById('userAvatarLarge').src = novaUrlFoto;
+                    
+                    status.innerText = "✅ Foto atualizada!";
+                });
+            }
+        } catch (err) {
+            status.innerText = "❌ Erro ao subir foto.";
+            console.error(err);
+        }
+    }, 'image/jpeg');
+});
+
+function fecharModal() { modal.style.display = 'none'; }
