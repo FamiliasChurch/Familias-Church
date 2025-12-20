@@ -65,31 +65,7 @@
                         <div class="form-wrapper">
                             <span class="label-pix" style="display:block; margin-bottom:15px; color:#555; text-align: center;">2º Envie o Comprovante:</span>
                             
-                            <form action="https://formsubmit.co/gab.alves0531@gmail.com" method="POST" enctype="multipart/form-data" class="form-custom">
-                                <input type="hidden" name="_subject" id="assunto-email" value="Novo Dízimo">
-                                <input type="hidden" name="_captcha" value="false">
-                                <input type="hidden" name="_next" value="https://familiaschurch.netlify.app/obrigado.html">
-
-                                <div class="input-group">
-                                    <label>Nome Completo</label>
-                                    <input type="text" name="nome" required placeholder="Seu nome">
-                                </div>
-                                <div class="row-dupla">
-                                    <div class="input-group">
-                                        <label>Data do Pix</label>
-                                        <input type="date" name="data" required>
-                                    </div>
-                                    <div class="input-group">
-                                        <label>Valor (R$)</label>
-                                        <input type="text" name="valor" id="valor" required placeholder="0,00" onkeyup="formatarMoeda(this)">
-                                    </div>
-                                </div>
-                                <div class="input-group">
-                                    <label>Comprovante (Print ou PDF)</label>
-                                    <input type="file" name="comprovante" accept="image/*,.pdf" required class="input-file">
-                                </div>
-                                <button type="submit" class="btn-enviar-dizimo">Enviar Comprovante</button>
-                            </form>
+                            <form id="formDizimoReal" class="form-custom">
                         </div>
                     </div>
                 </div>

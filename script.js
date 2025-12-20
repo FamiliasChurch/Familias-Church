@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const rotas = {
         'lista-proximos': carregarEventos,
         'evento-principal': carregarDestaquesHome,
+        'mural-testemunhos': carregarMuralTestemunhos,
         'lista-publicacoes': carregarFeed,
         'ministerios-tabs': initTabsMinisterios,
         'formOracao': initFormOracao,
@@ -237,9 +238,28 @@ function trocarUnidade(unidade) {
 }
 
 function mostrarOpcao(tipo) {
-    const o = document.getElementById('box-oferta'), d = document.getElementById('box-dizimo'), bt = document.querySelectorAll('.btn-toggle');
-    if (tipo === 'oferta') { o?.classList.remove('hidden'); d?.classList.add('hidden'); bt[0]?.classList.add('active'); bt[1]?.classList.remove('active'); }
-    else { o?.classList.add('hidden'); d?.classList.remove('hidden'); bt[1]?.classList.add('active'); bt[0]?.classList.remove('active'); }
+    const user = netlifyIdentity.currentUser();
+    const btnDizimo = document.querySelector('button[onclick="mostrarOpcao(\'dizimo\')"]');
+    const btnOferta = document.querySelector('button[onclick="mostrarOpcao(\'oferta\')"]');
+    const boxDizimo = document.getElementById('box-dizimo');
+    const boxOferta = document.getElementById('box-oferta');
+
+    if (tipo === 'dizimo') {
+        if (!user) {
+            alert("Para registrar dízimos e acompanhar seu histórico, por favor, faça login.");
+            netlifyIdentity.open(); // Abre o widget de login
+            return;
+        }
+        boxDizimo.classList.remove('hidden');
+        boxOferta.classList.add('hidden');
+        btnDizimo.classList.add('active');
+        btnOferta.classList.remove('active');
+    } else {
+        boxDizimo.classList.add('hidden');
+        boxOferta.classList.remove('hidden');
+        btnOferta.classList.add('active');
+        btnDizimo.classList.remove('active');
+    }
 }
 
 function initFormOracao() {
@@ -294,4 +314,238 @@ function initTabsMinisterios() {
             }
         };
     });
+}
+
+
+// Abre/Fecha o menu
+function toggleMenu() {
+    const card = document.getElementById('profileCard');
+    card.classList.toggle('active');
+}
+
+// Atualiza as informações do usuário logado
+function updateUserInfo(user) {
+    if (!user) return;
+
+    // Dados básicos
+    document.getElementById('userName').innerText = `Olá, ${user.user_metadata.full_name || 'Irmão'}!`;
+    document.getElementById('userEmail').innerText = user.email;
+
+    // Metadados Personalizados (Cargo e Idade)
+    // No Netlify, você configura isso em Identity -> Metadata
+    const metadata = user.user_metadata;
+    document.getElementById('userRole').innerText = metadata.cargo || "Membro";
+    document.getElementById('userAge').innerText = metadata.idade || "--";
+
+    // Fotos (Se vierem do Google Login, o Netlify mapeia automaticamente)
+    if (metadata.avatar_url) {
+        document.getElementById('userAvatarSmall').src = metadata.avatar_url;
+        document.getElementById('userAvatarLarge').src = metadata.avatar_url;
+    }
+}
+
+// Listener do Netlify Identity
+if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", user => updateUserInfo(user));
+    window.netlifyIdentity.on("login", user => {
+        updateUserInfo(user);
+        toggleMenu(); // Fecha o widget de login e abre o perfil se quiser
+    });
+    window.netlifyIdentity.on("logout", () => location.reload());
+}
+document.getElementById('formOracaoPerfil').onsubmit = async function(e) {
+    e.preventDefault();
+    const user = netlifyIdentity.currentUser();
+    const status = document.getElementById('statusOracao');
+    const texto = document.getElementById('textoOracao').value;
+
+    if (!user) {
+        alert("Precisas de estar logado!");
+        return;
+    }
+
+    status.innerText = "⏳ A enviar ao altar...";
+
+    const payload = {
+        texto: texto,
+        data: new Date().toISOString(),
+        nome: user.user_metadata.full_name
+    };
+
+    try {
+        const res = await fetch('/.netlify/functions/enviar_oracao', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ payload, userEmail: user.email })
+        });
+
+        if (res.ok) {
+            status.innerHTML = "<span style='color: green'>✅ Oração enviada!</span>";
+            document.getElementById('formOracaoPerfil').reset();
+            // poderias chamar uma função para atualizar a lista abaixo
+        } else {
+            throw new Error("Erro ao enviar");
+        }
+    } catch (err) {
+        status.innerHTML = "<span style='color: red'>❌ Tenta novamente mais tarde.</span>";
+    }
+};
+
+async function carregarEstatisticasFinanceiras() {
+    const user = netlifyIdentity.currentUser();
+    if (!user) return;
+
+    // Verificação de Role para o Financeiro
+    // No Netlify: Identity -> Metadata -> {"roles": ["financeiro"]}
+    const roles = user.app_metadata?.roles || [];
+    if (roles.includes("financeiro")) {
+        document.getElementById('adminFinanceiro').classList.remove('hidden');
+    }
+
+    try {
+        const res = await fetch(`/.netlify/functions/buscar_contribuicoes?userEmail=${user.email}`);
+        const contribuicoes = await res.json();
+
+        const agora = new Date();
+        const mesAtual = agora.getMonth();
+        const anoAtual = agora.getFullYear();
+
+        let somaMes = 0;
+        let somaAno = 0;
+
+        contribuicoes.forEach(c => {
+            const dataContr = new Date(c.data);
+            const valor = parseFloat(c.valor.replace(',', '.'));
+
+            if (dataContr.getFullYear() === anoAtual) {
+                somaAno += valor;
+                if (dataContr.getMonth() === mesAtual) {
+                    somaMes += valor;
+                }
+            }
+        });
+
+        document.getElementById('totalMensal').innerText = `R$ ${somaMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        document.getElementById('totalAnual').innerText = `R$ ${somaAno.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+    } catch (err) {
+        console.error("Erro ao calcular finanças:", err);
+    }
+}
+
+document.getElementById('formDizimoReal').onsubmit = async function(e) {
+    e.preventDefault();
+    const user = netlifyIdentity.currentUser();
+    const btn = e.target.querySelector('button');
+    
+    if (!user) return alert("Login necessário");
+
+    btn.innerText = "⏳ A registar...";
+    btn.disabled = true;
+
+    const payload = {
+        nome: e.target.nome.value,
+        data: e.target.data.value,
+        valor: e.target.valor.value,
+        tipo: "Dízimo",
+        status: "Pendente" // O financeiro mudará para "Confirmado" no painel
+    };
+
+    try {
+        const res = await fetch('/.netlify/functions/registrar_contribuicao', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ payload, userEmail: user.email })
+        });
+
+        if (res.ok) {
+            alert("Dízimo enviado com sucesso! Poderá acompanhar o status no seu perfil.");
+            window.location.href = "perfil.html";
+        }
+    } catch (err) {
+        alert("Erro ao processar. Tente novamente.");
+        btn.innerText = "Enviar Comprovante";
+        btn.disabled = false;
+    }
+};
+
+async function checarNotificacoes() {
+    const user = netlifyIdentity.currentUser();
+    if (!user) return;
+
+    const countLabel = document.getElementById('noti-count');
+    const listContainer = document.getElementById('noti-list');
+
+    try {
+        // Buscamos o histórico (usando a função que já criamos antes)
+        const resOracoes = await fetch(`/.netlify/functions/buscar_historico?userEmail=${user.email}`);
+        const resContri = await fetch(`/.netlify/functions/buscar_contribuicoes?userEmail=${user.email}`);
+        
+        const oracoes = await resOracoes.json();
+        const contribuicoes = await resContri.json();
+
+        // Filtramos apenas o que é NOVIDADE (Status mudou mas usuário não "limpou")
+        // Dica: No JSON, você pode adicionar um campo "visto: false"
+        const novidades = [
+            ...oracoes.filter(o => o.status === "Lida"),
+            ...contribuicoes.filter(c => c.status === "Confirmado")
+        ];
+
+        if (novidades.length > 0) {
+            countLabel.innerText = novidades.length;
+            countLabel.classList.remove('hidden');
+            
+            listContainer.innerHTML = novidades.map(n => `
+                <div class="noti-item">
+                    <i class="fa-solid ${n.texto ? 'fa-hands-praying' : 'fa-circle-check'}"></i>
+                    <div>
+                        <strong>${n.texto ? 'Oração Lida!' : 'Dízimo Confirmado!'}</strong>
+                        <p>${n.texto || 'Seu dízimo de R$ ' + n.valor + ' foi validado.'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (err) { console.error("Erro nas notificações", err); }
+}
+
+function toggleNotifications() {
+    document.getElementById('noti-dropdown').classList.toggle('hidden');
+    // Ao abrir, poderíamos marcar como "vistas" chamando outra função Netlify
+}
+
+// Inicia a checagem ao carregar
+netlifyIdentity.on("login", () => setInterval(checarNotificacoes, 60000)); // Checa a cada 1 minuto
+
+async function carregarMuralTestemunhos() {
+    const container = document.getElementById('mural-testemunhos');
+    if (!container) return;
+
+    try {
+        const res = await fetch('/.netlify/functions/listar_testemunhos');
+        const lista = await res.json();
+
+        // Engenharia: Ordena do mais recente para o mais antigo e pega os 10 primeiros
+        const dezMaisRecentes = lista
+            .sort((a, b) => new Date(b.date) - new Date(a.date)) 
+            .slice(0, 10);
+
+        container.innerHTML = dezMaisRecentes.map(t => `
+            <div class="card-testemunho">
+                <div class="aspas-icon">“</div>
+                <p class="texto-testemunho">${t.texto}</p>
+                <div class="autor-testemunho">
+                    <strong>— ${t.autor}</strong>
+                </div>
+            </div>
+        `).join('');
+        
+        // Caso não haja testemunhos aprovados ainda
+        if (dezMaisRecentes.length === 0) {
+            container.innerHTML = "<p class='aviso-vazio'>Em breve, novas vitórias compartilhadas!</p>";
+        }
+
+    } catch (err) {
+        console.error("Erro ao carregar testemunhos:", err);
+        container.innerHTML = "<p>Em breve, novas vitórias compartilhadas!</p>";
+    }
 }
