@@ -5,131 +5,115 @@
     <meta charset="UTF-8">
     <title>Portal do Obreiro | Famílias Church</title>
     <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&family=Smooch+Sans:wght@700&display=swap"
+        rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <style>
-        .form-publicar {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 30px;
-            border: 1px solid #ddd;
-            border-radius: 15px;
-            background: #fff;
-            box-shadow: var(--sombra-suave);
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .google-btn-container {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        select,
-        input,
-        textarea {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-family: sans-serif;
-            font-size: 1rem;
-        }
-
-        .btn-postar {
-            background: var(--cor-primaria);
-            color: #fff;
-            border: none;
-            padding: 15px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            transition: 0.3s;
-            font-size: 1.1rem;
-        }
-
-        .btn-postar:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-        }
-    </style>
 </head>
 
 <body>
+    <header id="header"></header>
 
-    <div id="login-section" class="form-publicar">
-        <h2 style="color: var(--cor-primaria); text-align: center;">Acesso do Obreiro</h2>
-        <p style="text-align: center; color: #666;">Entre com sua conta autorizada para publicar</p>
-        <div class="google-btn-container">
-            <div id="buttonDiv"></div>
-        </div>
-    </div>
-
-    <div id="admin-section" class="form-publicar hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 id="boas-vindas" style="color: var(--cor-primaria); margin: 0;"></h2>
-            <button onclick="location.reload()"
-                style="color: #666; background: none; border: none; cursor: pointer; text-decoration: underline;">Sair</button>
+    <main class="container" style="margin-top: 130px; min-height: 70vh;">
+        <div id="login-section" class="form-container">
+            <h2 class="titulo-secao" style="border: none; text-align: center;">Acesso do Obreiro</h2>
+            <div id="buttonDiv" style="display: flex; justify-content: center; margin-top: 20px;"></div>
         </div>
 
-        <form id="formConteudo">
-            <label>O que você deseja publicar?</label>
-            <select id="tipo" required>
-                <option value="devocionais">Devocional Diário</option>
-                <option value="estudos">Estudo Bíblico</option>
-            </select>
-            <input type="text" id="titulo" placeholder="Título da Mensagem" required>
-            <textarea id="texto" placeholder="Escreva o conteúdo aqui (Suporta Markdown)..." rows="12"
-                required></textarea>
-            <button type="submit" class="btn-postar">🚀 Publicar no Site</button>
-        </form>
-        <p id="status" style="margin-top: 20px; font-weight: bold; text-align: center;"></p>
-    </div>
+        <div id="admin-section" class="form-container hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 id="boas-vindas" style="color: var(--cor-primaria); margin: 0;"></h2>
+                <button onclick="location.reload()"
+                    style="background:none; border:none; cursor:pointer; text-decoration:underline;">Sair</button>
+            </div>
+
+            <form id="formConteudo">
+                <label>O que deseja publicar?</label>
+                <select id="tipo" onchange="alternarCamposEvento()" required>
+                    <option value="devocionais">Devocional</option>
+                    <option value="estudos">Estudo Bíblico</option>
+                    <option value="eventos">Evento / Culto Especial</option>
+                </select>
+
+                <div id="campos-evento" class="hidden"
+                    style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin: 10px 0;">
+                    <label>Data do Evento</label>
+                    <input type="datetime-local" id="data_evento">
+                    <label>URL da Imagem (Ex: assets/img/upload/banner.jpg)</label>
+                    <input type="text" id="imagem_evento" placeholder="Cole o caminho da imagem"
+                        oninput="atualizarPreview()">
+
+                    <div id="preview-container" class="hidden" style="margin: 15px 0; text-align: center;">
+                        <p style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">👀 Pré-visualização da Capa:</p>
+                        <img id="preview-img" src="" alt="Preview"
+                            style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; border: 2px solid var(--cor-primaria);">
+                    </div>
+                    <label style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="is_special">
+                        Encontro com Deus (Destaque)?</label>
+                </div>
+
+                <input type="text" id="titulo" placeholder="Título" required>
+                <textarea id="texto" placeholder="Conteúdo (Markdown)..." rows="10" required></textarea>
+                <button type="submit" class="btn-enviar">🚀 Publicar e Atualizar Site</button>
+            </form>
+            <p id="status" style="margin-top: 20px; font-weight: bold; text-align: center;"></p>
+        </div>
+    </main>
+
+    <footer id="footer" class="footer-moderno"></footer>
 
     <script>
+        function alternarCamposEvento() {
+            document.getElementById('campos-evento').classList.toggle('hidden', document.getElementById('tipo').value !== 'eventos');
+        }
+        function atualizarPreview() {
+            const url = document.getElementById('imagem_evento').value;
+            const previewContainer = document.getElementById('preview-container');
+            const previewImg = document.getElementById('preview-img');
+
+            if (url.trim() !== "") {
+                previewImg.src = url;
+                previewContainer.classList.remove('hidden');
+            } else {
+                previewContainer.classList.add('hidden');
+            }
+        }
         document.getElementById('formConteudo').onsubmit = async function (e) {
             e.preventDefault();
             const status = document.getElementById('status');
-            status.innerText = "⏳ Processando publicação segura...";
+            const tipoSel = document.getElementById('tipo').value;
+            status.innerText = "⏳ Publicando e gerando índices...";
 
             const payload = {
-                tipo: document.getElementById('tipo').value === 'devocionais' ? 'devocional' : 'estudo',
-                autor: autorLogado,
                 title: document.getElementById('titulo').value,
-                date: new Date().toISOString(),
-                body: document.getElementById('texto').value
+                body: document.getElementById('texto').value,
+                autor: autorLogado,
+                date: new Date().toISOString()
             };
 
-            const fileName = `${Date.now()}-${payload.title.toLowerCase().replace(/\s+/g, '-')}.json`;
-            const PATH = `content/publicacoes/${document.getElementById('tipo').value}/${fileName}`;
+            let pathFinal = "";
+            if (tipoSel === 'eventos') {
+                payload.date = document.getElementById('data_evento').value; // Data do evento
+                payload.image = document.getElementById('imagem_evento').value || "assets/img/logo.jpg";
+                payload.is_special = document.getElementById('is_special').checked;
+                pathFinal = `content/eventos/${Date.now()}-evento.json`;
+            } else {
+                payload.tipo = tipoSel === 'devocionais' ? 'devocional' : 'estudo';
+                pathFinal = `content/publicacoes/${tipoSel}/${Date.now()}-post.json`;
+            }
 
             try {
                 const res = await fetch('/.netlify/functions/publicar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ payload, path: PATH })
+                    body: JSON.stringify({ payload, path: pathFinal, folder: tipoSel === 'eventos' ? 'eventos' : `publicacoes/${tipoSel}` })
                 });
 
                 if (res.ok) {
-                    status.innerHTML = "<span style='color: green'>✅ Sucesso! Redirecionando...</span>";
-                    document.getElementById('formConteudo').reset(); // Movido para dentro do sucesso
-
-                    setTimeout(() => {
-                        window.location.href = 'obrigado-publicacao.html';
-                    }, 1500);
-                } else {
-                    const errData = await res.json();
-                    throw new Error(errData.message || "Erro no servidor");
+                    status.innerHTML = "✅ Sucesso! O site foi atualizado.";
+                    setTimeout(() => { window.location.href = 'obrigado-publicacao.html'; }, 1500);
                 }
-            } catch (err) {
-                // O CATCH É OBRIGATÓRIO AQUI
-                status.innerHTML = `<span style='color: red'>❌ Erro: ${err.message}</span>`;
-            }
-        };
+            } catch (err) { status.innerHTML = "❌ Erro: " + err.message; }
+        };        
     </script>
     <script src="../script.js"></script>
 </body>

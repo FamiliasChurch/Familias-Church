@@ -1,0 +1,7 @@
+{
+  "title": "Culto de Teste no Windows",
+  "date": "2025-12-24T19:30:00Z",
+  "is_special": true,
+  "image": "assets/img/familias_church.jpg",
+  "body": "Teste de renderização e automação de índice via Python no Windows."
+}

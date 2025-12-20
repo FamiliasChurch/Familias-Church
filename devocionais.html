@@ -1,24 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Devocionais e Estudos | Famílias Church</title>
     <link rel="stylesheet" href="style.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&family=Smooch+Sans:wght@700&family=Playfair+Display:wght@700&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 </head>
-
 <body>
     <header id="header"></header>
 
     <main>
-        <div class="hero-mini">
-            <h1>Alimento Diário</h1>
-            <p>Estudos Bíblicos e Mensagens de Fé</p>
+        <div class="hero-page">
+            <div class="hero-content-page">
+                <h1>ALIMENTO DIÁRIO</h1>
+                <p>Estudos Bíblicos e Mensagens de Fé</p>
+            </div>
         </div>
 
         <section class="container">
@@ -28,8 +25,8 @@
                 <button class="btn-filtro" data-tipo="estudo">Estudos Bíblicos</button>
             </div>
 
-            <div id="lista-publicacoes" class="feed-publicacoes">
-                <p>Carregando mensagens de fé...</p>
+            <div id="lista-publicacoes" class="grid-eventos">
+                <div class="skeleton-card-evento"></div>
             </div>
         </section>
     </main>
@@ -37,8 +34,7 @@
     <div id="modalLeitura" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="fecharLeitura()">&times;</span>
-            <div id="conteudo-completo-leitura">
-            </div>
+            <div id="conteudo-completo-leitura"></div>
         </div>
     </div>
 
@@ -47,57 +43,4 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="script.js"></script>
 </body>
-
 </html>
->>
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Devocionais e Estudos | Famílias Church</title>
-    <link rel="stylesheet" href="style.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap"
-        rel="stylesheet">
-</head>
-
-<body>
-    <header id="header"></header>
-
-    <main>
-        <div class="hero-mini">
-            <h1>Alimento Diário</h1>
-            <p>Estudos Bíblicos e Mensagens de Fé</p>
-        </div>
-
-        <section class="container">
-            <div class="filtro-publicacoes">
-                <button class="btn-filtro active" data-tipo="todos">Todos</button>
-                <button class="btn-filtro" data-tipo="devocional">Devocionais</button>
-                <button class="btn-filtro" data-tipo="estudo">Estudos Bíblicos</button>
-            </div>
-
-            <div id="lista-publicacoes" class="feed-publicacoes">
-                <p>Carregando mensagens de fé...</p>
-            </div>
-        </section>
-    </main>
-
-    <div id="modalLeitura" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="fecharLeitura()">&times;</span>
-            <div id="conteudo-completo-leitura">
-            </div>
-        </div>
-    </div>
-
-    <footer id="footer" class="footer-moderno"></footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="script.js"></script>
-</body>
-
-</html>
->
