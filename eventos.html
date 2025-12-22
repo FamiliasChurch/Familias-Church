@@ -1,16 +1,118 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eventos | Famílias Church</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;700&family=Smooch+Sans:wght@100..900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;700&family=Smooch+Sans:wght@100..900&display=swap"
+        rel="stylesheet">
     <link rel="shortcut icon" href="./assets/img/logo.jpg" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+
 <body>
-    <header id="header"></header>
+    <header>
+        <div class="container header-flex"
+            style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0; height: 85px;">
+            <a href="index.html" class="logo" style="display: flex; align-items: center;">
+                <img src="./assets/img/logo.jpg" alt="Famílias Church"
+                    style="height: 75px; width: auto; object-fit: contain;">
+            </a>
+
+            <nav class="nav-menu">
+                <ul style="display: flex; list-style: none; gap: 25px; margin: 0; padding: 0; align-items: center;">
+                    <li><a href="index.html"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">INÍCIO</a>
+                    </li>
+                    <li><a href="index.html#sobre"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">QUEM
+                            SOMOS</a>
+                    </li>
+                    <li><a href="index.html#ministerios-tabs"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">MINISTÉRIOS</a>
+                    </li>
+                    <li><a href="index.html#cultos"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">CULTOS</a>
+                    </li>
+                    <li><a href="doacoes.html"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">DOAÇÕES</a>
+                    </li>
+                    <li><a href="eventos.html"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">EVENTOS</a>
+                    </li>
+                    <li><a href="devocionais.html"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">DEVOCIONAIS</a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="user-controls" style="display: flex; align-items: center; gap: 15px;">
+
+                <div class="notification-wrapper" style="position: relative;">
+                    <button class="noti-trigger" onclick="toggleNotifications()"
+                        style="background:none; border:none; cursor:pointer; display: flex; align-items: center;">
+                        <i class="fa-solid fa-bell" style="font-size: 1.3rem; color: #2d5a27;"></i>
+                        <span id="noti-count" class="badge-count hidden">0</span>
+                    </button>
+                    <div id="noti-dropdown" class="noti-card">
+                        <div class="noti-header"
+                            style="font-weight: bold; border-bottom: 1px solid #eee; margin-bottom: 5px; padding: 10px;">
+                            Notificações</div>
+                        <div id="noti-list" class="noti-body" style="padding: 10px;">
+                            <p style="font-size: 0.8rem; color: #666;">Sem novidades.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="user-menu-container" style="position: relative;">
+                    <button class="profile-trigger" onclick="toggleMenu()"
+                        style="background:none; border:none; cursor:pointer; padding:0; display: flex; align-items: center;">
+                        <img id="userAvatarSmall" class="skeleton" src="https://www.w3schools.com/howto/img_avatar.png"
+                            alt="Perfil"
+                            style="width: 45px; height: 45px; border-radius: 50%; border: 2px solid #2d5a27; object-fit: cover;">
+                    </button>
+
+                    <div class="profile-card" id="profileCard">
+                        <div class="card-header"
+                            style="background: #f9f9f9; padding: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
+                            <span id="userEmail" class="skeleton" style="font-size: 0.75rem; color: #666;">...</span>
+                            <button onclick="toggleMenu()"
+                                style="border:none; background:none; cursor:pointer; font-size: 1.2rem; color: #999;">&times;</button>
+                        </div>
+                        <div class="card-content" style="text-align: center; padding: 20px;">
+                            <div class="avatar-large" style="margin-bottom: 15px;">
+                                <img id="userAvatarLarge" class="skeleton"
+                                    src="https://www.w3schools.com/howto/img_avatar.png" alt="Foto">
+                            </div>
+                            <h2 id="userName" class="skeleton" style="font-size: 1.2rem; margin: 0 0 5px 0;">Olá!</h2>
+
+                            <div class="info-extra" style="font-size: 0.85rem; color: #777; margin-bottom: 15px;">
+                                <p>📅 Idade: <strong id="userAge" class="skeleton">--</strong> anos</p>
+                                <p>🛡️ Cargo: <strong id="userRole" class="skeleton">Membro</strong></p>
+                            </div>
+
+                            <div id="admin-actions-container"></div>
+                            <hr style="margin-bottom: 15px; border: 0; border-top: 1px solid #f0f0f0;">
+                            <button class="action-btn-secondary" onclick="window.location.href='perfil.html'"
+                                style="width:100%; margin-bottom:10px; cursor: pointer;">Meu Perfil</button>
+                            <button class="action-btn logout-btn" onclick="netlifyIdentity.logout()"
+                                style="width:100%; cursor:pointer;">Sair</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-controls" style="display: flex; align-items: center; gap: 15px;">
+                    <button id="btnLoginHeader" onclick="netlifyIdentity.open()" class="btn-hero"
+                        style="font-size: 0.8rem; padding: 8px 15px; margin: 0;">Entrar</button>
+
+                    <div id="userInfoHeader" class="hidden" style="display: flex; align-items: center; gap: 15px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
 
     <main>
         <div class="hero-page">
@@ -32,6 +134,10 @@
     </main>
 
     <footer id="footer" class="footer-moderno"></footer>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
     <script src="script.js"></script>
 </body>

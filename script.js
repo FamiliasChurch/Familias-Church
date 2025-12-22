@@ -1,43 +1,59 @@
 /* ==========================================================
-    1. CONFIGURAÇÕES E INICIALIZAÇÃO
+    1. CONFIGURAÇÕES E INICIALIZAÇÃO (Agnóstico)
 ========================================================== */
 const prefixo = window.location.pathname.includes('/admin/') ? '../' : './';
-const CONFIG = {
-    basePath: `${prefixo}content`,
-    repo: "FamiliasChurch/FamiliasChurch",
-    avatarFallback: "https://www.w3schools.com/howto/img_avatar.png"
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBvFM13K0XadCnAHdHE0C5GtA2TH5DaqLg",
+    authDomain: "familias-church.firebaseapp.com",
+    projectId: "familias-church",
+    storageBucket: "familias-church.firebasestorage.app",
+    messagingSenderId: "764183777206",
+    appId: "1:764183777206:web:758e4f04ee24b86229bb17",
+    measurementId: "G-VHWLCPM3FR"
 };
 
-// Funções de inicialização obrigatórias (Evita o erro de 'not defined')
-function initMenuMobile() {
-    console.log("Menu mobile inicializado");
-}
+if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+const db = firebase.firestore();
 
-let cacheConteudo = [];
 let cropper;
 
+/* ==========================================================
+    2. NÚCLEO DE AUTENTICAÇÃO E COMPONENTES
+========================================================== */
+/* ==========================================================
+    NÚCLEO DE AUTENTICAÇÃO (Sincronizado)
+========================================================== */
 document.addEventListener('DOMContentLoaded', () => {
-    carregarComponentes();
-    initMenuMobile();
-
-    // Inicialização do Netlify Identity
+    // 1. Inicializa o Netlify Identity explicitamente
     if (window.netlifyIdentity) {
-        netlifyIdentity.init({ API_URL: 'https://familiaschurch.netlify.app/.netlify/identity' });
+        netlifyIdentity.init({
+            API_URL: 'https://familiaschurch.netlify.app/.netlify/identity'
+        });
 
-        netlifyIdentity.on("init", user => { if (user) atualizarInterfaceUsuario(user); });
+        // 2. Aguarda o estado inicial (Resolve o "Carregando...")
+        netlifyIdentity.on("init", user => {
+            if (user) {
+                console.log("Usuário detectado:", user.email);
+                atualizarInterfaceUsuario(user);
+                if (window.location.pathname.includes('perfil.html')) {
+                    carregarDadosCompletosPerfil(user);
+                }
+            }
+        });
 
+        // 3. Lógica de Redirecionamento (Savepoint)
         netlifyIdentity.on("login", user => {
             const meta = user.user_metadata;
-            atualizarInterfaceUsuario(user);
-            netlifyIdentity.close();
+            console.log("Login realizado com sucesso!");
 
-            // Lógica de Redirecionamento e Savepoint
-            if (!meta.nascimento || !meta.whatsapp) {
+            // Verifica se o cadastro está incompleto
+            if (!meta.whatsapp || !meta.nascimento) {
                 window.location.href = prefixo + 'completar-perfil.html';
             } else {
+                // Redireciona conforme o cargo
                 const cargo = (meta.cargo || "").toLowerCase();
-                const roles = user.app_metadata?.roles || [];
-                if (["financeiro", "apóstolo", "apostolo"].includes(cargo) || roles.includes("mod")) {
+                if (["apóstolo", "apostolo", "financeiro", "admin"].includes(cargo)) {
                     window.location.href = prefixo + 'admin/index.html';
                 } else {
                     window.location.href = prefixo + 'perfil.html';
@@ -45,144 +61,66 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // 4. Logout Limpo
         netlifyIdentity.on("logout", () => {
             localStorage.clear();
-            window.location.href = prefixo + 'index.html';
+            window.location.href = prefixo + "index.html";
         });
     }
-
-    // Rotas de Inicialização baseadas em IDs presentes na página
-    const rotas = {
-        'lista-proximos': typeof carregarEventos === 'function' ? carregarEventos : null,
-        'evento-principal': typeof carregarDestaquesHome === 'function' ? carregarDestaquesHome : null,
-        'mural-testemunhos': carregarMuralTestemunhos,
-        'lista-publicacoes': typeof carregarFeed === 'function' ? carregarFeed : null,
-        'ministerios-tabs': typeof initTabsMinisterios === 'function' ? initTabsMinisterios : null,
-        'formCompletarPerfil': initCompletarPerfil,
-        'fotoInput': initUploadAvatar
-    };
-
-    Object.keys(rotas).forEach(id => {
-        if (document.getElementById(id) && rotas[id]) setTimeout(rotas[id], 0);
-    });
 });
 
 /* ==========================================================
-    2. INTERFACE E PERMISSÕES
+    3. FUNÇÕES DE INTERFACE (Resolve cliques e UI)
 ========================================================== */
 function atualizarInterfaceUsuario(user) {
-    if (!user) return;
     const meta = user.user_metadata;
-    const roles = user.app_metadata?.roles || [];
-    const fotoFinal = meta.avatar_url || CONFIG.avatarFallback;
+    const foto = meta.avatar_url || "https://www.w3schools.com/howto/img_avatar.png";
 
-    // Sincroniza Avatares
-    ['userAvatarSmall', 'userAvatarLarge', 'avatarImg'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.src = fotoFinal; el.classList.remove('skeleton'); }
-    });
+    if (document.getElementById('avatarImg')) document.getElementById('avatarImg').src = foto;
+    if (document.getElementById('userAvatarSmall')) document.getElementById('userAvatarSmall').src = foto;
+    if (document.getElementById('nomeUsuario')) document.getElementById('nomeUsuario').innerText = meta.full_name || "Membro";
+    if (document.getElementById('cargoUsuario')) document.getElementById('cargoUsuario').innerText = meta.cargo || "Membro";
 
-    // Sincroniza Textos do Perfil
-    const campos = {
-        'userName': `Olá, ${meta.full_name || 'Membro'}!`,
-        'userRole': meta.cargo || "Membro",
-        'userEmail': user.email,
-        'nomeUsuario': meta.full_name || "Membro da Família",
-        'cargoUsuario': meta.cargo || "Membro",
-        'userAge': meta.nascimento ? calcularIdade(meta.nascimento) : "--"
-    };
+    const btnAdmin = document.getElementById('adminFinanceiro');
+    if (btnAdmin) {
+        const cargo = (meta.cargo || "").toLowerCase();
+        if (["apóstolo", "apostolo", "financeiro", "admin"].includes(cargo)) btnAdmin.classList.remove('hidden');
+    }
+}
 
-    Object.keys(campos).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.innerText = campos[id]; el.classList.remove('skeleton'); }
-    });
-
-    // Botões de Administração dinâmicos
-    const containerAcoes = document.getElementById('admin-actions-container');
-    if (containerAcoes) {
-        containerAcoes.innerHTML = '';
-        if (roles.includes("mod") || ["apóstolo", "apostolo", "financeiro"].includes(meta.cargo?.toLowerCase())) {
-            containerAcoes.innerHTML += `<button class="action-btn-secondary" onclick="window.location.href='${prefixo}admin/index.html'">🛡️ Dashboard Admin</button>`;
+async function carregarComponentes() {
+    const itens = [{ id: 'header', file: 'header' }, { id: 'footer', file: 'footer' }];
+    for (const item of itens) {
+        const el = document.getElementById(item.id);
+        if (el) {
+            try {
+                const res = await fetch(`${prefixo}components/${item.file}.html`);
+                el.innerHTML = await res.text();
+            } catch (e) { console.error("Erro componente:", item.file); }
         }
     }
 }
 
-function initCompletarPerfil() {
-    const form = document.getElementById('formCompletarPerfil');
-    if (!form) return;
-    form.onsubmit = async (e) => {
-        e.preventDefault();
-        const user = netlifyIdentity.currentUser();
-        const btn = form.querySelector('button');
-        btn.innerText = "Salvando...";
-
-        const novosDados = {
-            full_name: document.getElementById('regNome').value,
-            nascimento: document.getElementById('regNascimento').value,
-            whatsapp: document.getElementById('regWhatsapp').value,
-            cargo: "Membro"
-        };
-
-        try {
-            await user.update({ data: novosDados });
-            alert("Perfil atualizado com sucesso!");
-            window.location.href = "perfil.html";
-        } catch (err) {
-            alert("Erro ao salvar dados.");
-            btn.innerText = "Tentar novamente";
-        }
-    };
-}
+// Funções de clique do perfil
+function toggleMenu() { document.getElementById('profileCard')?.classList.toggle('active'); }
+function toggleNotifications() { document.getElementById('noti-dropdown')?.classList.toggle('active'); }
 
 /* ==========================================================
-    3. INTERFACE E UX (MENUS E DROPDOWNS)
+    4. DADOS (Firestore)
 ========================================================== */
-function toggleMenu() {
-    const card = document.getElementById('profileCard');
-    const noti = document.getElementById('noti-dropdown');
-    if (noti) noti.classList.remove('active');
-    card?.classList.toggle('active');
-}
-
-function toggleNotifications() {
-    const noti = document.getElementById('noti-dropdown');
-    const card = document.getElementById('profileCard');
-    if (card) card.classList.remove('active');
-    noti?.classList.toggle('active');
-}
-
-window.onclick = (e) => {
-    if (!e.target.closest('.user-menu-container') && !e.target.closest('.notification-wrapper')) {
-        document.getElementById('profileCard')?.classList.remove('active');
-        document.getElementById('noti-dropdown')?.classList.remove('active');
-    }
-};
-
-/* ==========================================================
-    4. GESTÃO DE DADOS (API & CACHE)
-========================================================== */
-async function fetchConteudo(subpasta) {
-    const cacheKey = `church_cache_${subpasta.replace('/', '_')}`;
-    const expiraEm = 10 * 60 * 1000; // 10 minutos
-    const cacheSalvo = localStorage.getItem(cacheKey);
-
-    if (cacheSalvo) {
-        const { timestamp, data } = JSON.parse(cacheSalvo);
-        if (Date.now() - timestamp < expiraEm) return data;
-    }
-
-    const url = `${CONFIG.basePath}/${subpasta.includes('/') ? subpasta.split('/').pop() : subpasta}_all.json`;
+async function carregarDadosCompletosPerfil(user) {
+    const container = document.getElementById('lista-oracoes');
+    if (!container) return;
 
     try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Arquivo não encontrado");
-        const dataFinal = await res.json();
-        localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: dataFinal }));
-        return dataFinal;
-    } catch (e) {
-        console.error(`Erro ao carregar ${subpasta}:`, e);
-        return [];
-    }
+        const snap = await db.collection("oracoes").where("email", "==", user.email).orderBy("data", "desc").get();
+        container.innerHTML = snap.docs.map(doc => `
+            <div class="item-registro">
+                <p>${doc.data().texto}</p>
+                <small>${doc.data().data?.toDate().toLocaleDateString('pt-BR')}</small>
+            </div>
+        `).join('') || '<p class="aviso-vazio">Nenhum pedido enviado.</p>';
+    } catch (e) { console.error(e); }
 }
 
 /* ==========================================================
@@ -210,26 +148,6 @@ function calcularIdade(dataNascimento) {
     if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) idade--;
     return idade;
 }
-
-/* ==========================================================
-    6. FIREBASE (TESTEMUNHOS, DÍZIMOS E ORAÇÕES)
-========================================================== */
-
-const firebaseConfig = {
-    apiKey: "AIzaSyBvFM13K0XadCnAHdHE0C5GtA2TH5DaqLg",
-    authDomain: "familias-church.firebaseapp.com",
-    projectId: "familias-church",
-    storageBucket: "familias-church.firebasestorage.app",
-    messagingSenderId: "764183777206",
-    appId: "1:764183777206:web:758e4f04ee24b86229bb17",
-    measurementId: "G-VHWLCPM3FR"
-};
-
-// Inicialização compatível com a arquitetura híbrida
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.firestore();
 
 // MURAL DE TESTEMUNHOS (Firestore Real-time)
 async function carregarMuralTestemunhos() {

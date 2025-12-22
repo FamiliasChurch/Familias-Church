@@ -8,19 +8,120 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;700&family=Smooch+Sans:wght@100..900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;700&family=Smooch+Sans:wght@100..900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="./assets/img/logo.jpg" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <meta name="description" content="Famílias Church - Restaurar, Cuidar e Amar. Venha nos visitar em Fazenda Rio Grande/PR ou Tijucas/SC.">
+
+    <meta name="description"
+        content="Famílias Church - Restaurar, Cuidar e Amar. Venha nos visitar em Fazenda Rio Grande/PR ou Tijucas/SC.">
 
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 
 <body>
 
-    <header id="header"></header>
+    <header>
+        <div class="container header-flex"
+            style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0; height: 85px;">
+            <a href="index.html" class="logo" style="display: flex; align-items: center;">
+                <img src="./assets/img/logo.jpg" alt="Famílias Church"
+                    style="height: 75px; width: auto; object-fit: contain;">
+            </a>
+
+            <nav class="nav-menu">
+                <ul style="display: flex; list-style: none; gap: 25px; margin: 0; padding: 0; align-items: center;">
+                    <li><a href="index.html"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">INÍCIO</a>
+                    </li>
+                    <li><a href="index.html#sobre"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">QUEM
+                            SOMOS</a>
+                    </li>
+                    <li><a href="index.html#ministerios-tabs"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">MINISTÉRIOS</a>
+                    </li>
+                    <li><a href="index.html#cultos"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">CULTOS</a>
+                    </li>
+                    <li><a href="doacoes.html"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">DOAÇÕES</a>
+                    </li>
+                    <li><a href="eventos.html"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">EVENTOS</a>
+                    </li>
+                    <li><a href="devocionais.html"
+                            style="text-decoration: none; font-weight: 500; font-size: 0.85rem; color: #333;">DEVOCIONAIS</a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="user-controls" style="display: flex; align-items: center; gap: 15px;">
+
+                <div class="notification-wrapper" style="position: relative;">
+                    <button class="noti-trigger" onclick="toggleNotifications()"
+                        style="background:none; border:none; cursor:pointer; display: flex; align-items: center;">
+                        <i class="fa-solid fa-bell" style="font-size: 1.3rem; color: #2d5a27;"></i>
+                        <span id="noti-count" class="badge-count hidden">0</span>
+                    </button>
+                    <div id="noti-dropdown" class="noti-card">
+                        <div class="noti-header"
+                            style="font-weight: bold; border-bottom: 1px solid #eee; margin-bottom: 5px; padding: 10px;">
+                            Notificações</div>
+                        <div id="noti-list" class="noti-body" style="padding: 10px;">
+                            <p style="font-size: 0.8rem; color: #666;">Sem novidades.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="user-menu-container" style="position: relative;">
+                    <button class="profile-trigger" onclick="toggleMenu()"
+                        style="background:none; border:none; cursor:pointer; padding:0; display: flex; align-items: center;">
+                        <img id="userAvatarSmall" class="skeleton" src="https://www.w3schools.com/howto/img_avatar.png"
+                            alt="Perfil"
+                            style="width: 45px; height: 45px; border-radius: 50%; border: 2px solid #2d5a27; object-fit: cover;">
+                    </button>
+
+                    <div class="profile-card" id="profileCard">
+                        <div class="card-header"
+                            style="background: #f9f9f9; padding: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
+                            <span id="userEmail" class="skeleton" style="font-size: 0.75rem; color: #666;">...</span>
+                            <button onclick="toggleMenu()"
+                                style="border:none; background:none; cursor:pointer; font-size: 1.2rem; color: #999;">&times;</button>
+                        </div>
+                        <div class="card-content" style="text-align: center; padding: 20px;">
+                            <div class="avatar-large" style="margin-bottom: 15px;">
+                                <img id="userAvatarLarge" class="skeleton"
+                                    src="https://www.w3schools.com/howto/img_avatar.png" alt="Foto">
+                            </div>
+                            <h2 id="userName" class="skeleton" style="font-size: 1.2rem; margin: 0 0 5px 0;">Olá!</h2>
+
+                            <div class="info-extra" style="font-size: 0.85rem; color: #777; margin-bottom: 15px;">
+                                <p>📅 Idade: <strong id="userAge" class="skeleton">--</strong> anos</p>
+                                <p>🛡️ Cargo: <strong id="userRole" class="skeleton">Membro</strong></p>
+                            </div>
+
+                            <div id="admin-actions-container"></div>
+                            <hr style="margin-bottom: 15px; border: 0; border-top: 1px solid #f0f0f0;">
+                            <button class="action-btn-secondary" onclick="window.location.href='perfil.html'"
+                                style="width:100%; margin-bottom:10px; cursor: pointer;">Meu Perfil</button>
+                            <button class="action-btn logout-btn" onclick="netlifyIdentity.logout()"
+                                style="width:100%; cursor:pointer;">Sair</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-controls" style="display: flex; align-items: center; gap: 15px;">
+                    <button id="btnLoginHeader" onclick="netlifyIdentity.open()" class="btn-hero"
+                        style="font-size: 0.8rem; padding: 8px 15px; margin: 0;">Entrar</button>
+
+                    <div id="userInfoHeader" class="hidden" style="display: flex; align-items: center; gap: 15px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
 
     <main>
         <section id="inicio" class="hero">
@@ -57,7 +158,8 @@
             <div class="container sobre-container">
                 <div class="sobre-versiculo-box fade-in">
                     <div class="icone-citacao">“</div>
-                    <blockquote>Roguemos a vocês, irmãos, que admoestem os indisciplinados, consolem os desanimados, amparem os fracos e sejam pacientes com todos.</blockquote>
+                    <blockquote>Roguemos a vocês, irmãos, que admoestem os indisciplinados, consolem os desanimados,
+                        amparem os fracos e sejam pacientes com todos.</blockquote>
                     <cite>1 Tessalonicenses 5.14</cite>
                 </div>
                 <figure class="sobre-lider fade-in">
@@ -79,22 +181,41 @@
             </div>
             <div class="container ministerios-wrapper">
                 <div class="tabs-header">
-                    <button class="tab-btn active" onclick="ativarAba(this)" data-titulo="Louvor" data-desc="Levando a igreja à presença de Deus através da adoração profunda e música de excelência." data-img="https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=2070">Louvor</button>
-                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Famílias" data-desc="Edificando lares sobre a Rocha, fortalecendo casamentos e a criação de filhos." data-img="https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=2070">Famílias</button>
-                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Déboras" data-desc="Mulheres de intercessão que se levantam em oração fervorosa por seus filhos e pela nação." data-img="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1888">Déboras</button>
-                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Jovens" data-desc="Uma geração de força, santidade e propósito, pronta para transformar a sociedade." data-img="https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070">Jovens</button>
-                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Teens" data-desc="Adolescentes conectados e apaixonados por Jesus, vivendo a verdade em um mundo confuso." data-img="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=2069">Teens</button>
-                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Kids" data-desc="Ensinando a próxima geração com amor, diversão e a pureza da Palavra de Deus." data-img="https://images.unsplash.com/photo-1485546246426-74dc88dec4d9?q=80&w=2069">Kids</button>
-                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Teatro" data-desc="A arte a serviço do Reino, comunicando o Evangelho de forma criativa e impactante." data-img="https://images.unsplash.com/photo-1503095392237-fa3b925b4487?q=80&w=2069">Teatro</button>
-                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Dança" data-desc="Expressão de liberdade, louvor e adoração através do movimento e da arte." data-img="https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?q=80&w=2070">Dança</button>
+                    <button class="tab-btn active" onclick="ativarAba(this)" data-titulo="Louvor"
+                        data-desc="Levando a igreja à presença de Deus através da adoração profunda e música de excelência."
+                        data-img="https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=2070">Louvor</button>
+                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Famílias"
+                        data-desc="Edificando lares sobre a Rocha, fortalecendo casamentos e a criação de filhos."
+                        data-img="https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=2070">Famílias</button>
+                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Déboras"
+                        data-desc="Mulheres de intercessão que se levantam em oração fervorosa por seus filhos e pela nação."
+                        data-img="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1888">Déboras</button>
+                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Jovens"
+                        data-desc="Uma geração de força, santidade e propósito, pronta para transformar a sociedade."
+                        data-img="https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070">Jovens</button>
+                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Teens"
+                        data-desc="Adolescentes conectados e apaixonados por Jesus, vivendo a verdade em um mundo confuso."
+                        data-img="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=2069">Teens</button>
+                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Kids"
+                        data-desc="Ensinando a próxima geração com amor, diversão e a pureza da Palavra de Deus."
+                        data-img="https://images.unsplash.com/photo-1485546246426-74dc88dec4d9?q=80&w=2069">Kids</button>
+                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Teatro"
+                        data-desc="A arte a serviço do Reino, comunicando o Evangelho de forma criativa e impactante."
+                        data-img="https://images.unsplash.com/photo-1503095392237-fa3b925b4487?q=80&w=2069">Teatro</button>
+                    <button class="tab-btn" onclick="ativarAba(this)" data-titulo="Dança"
+                        data-desc="Expressão de liberdade, louvor e adoração através do movimento e da arte."
+                        data-img="https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?q=80&w=2070">Dança</button>
                 </div>
                 <div class="ministerios-layout">
                     <div class="tab-content-display">
-                        <div class="tab-img-box"><img id="tabImg" src="https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=2070" alt="Ministério" loading="lazy"></div>
+                        <div class="tab-img-box"><img id="tabImg"
+                                src="https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=2070"
+                                alt="Ministério" loading="lazy"></div>
                         <div class="tab-text-box">
                             <h3 id="tabTitulo">Louvor</h3>
                             <div class="divisor-verde"></div>
-                            <p id="tabDesc">Levando a igreja à presença de Deus através da adoração profunda e música de excelência.</p>
+                            <p id="tabDesc">Levando a igreja à presença de Deus através da adoração profunda e música de
+                                excelência.</p>
                         </div>
                     </div>
                 </div>
@@ -117,14 +238,26 @@
                         <div class="coluna-agenda">
                             <h3 class="titulo-coluna">Fazenda Rio Grande</h3>
                             <div class="grid-cultos">
-                                <div class="card"><h3>Domingo</h3><p class="horario">19:00</p><p class="nome-culto">Culto da Família</p></div>
-                                <div class="card"><h3>Quinta-Feira</h3><p class="horario">20:00</p><p class="nome-culto">Ensino Bíblico</p></div>
+                                <div class="card">
+                                    <h3>Domingo</h3>
+                                    <p class="horario">19:00</p>
+                                    <p class="nome-culto">Culto da Família</p>
+                                </div>
+                                <div class="card">
+                                    <h3>Quinta-Feira</h3>
+                                    <p class="horario">20:00</p>
+                                    <p class="nome-culto">Ensino Bíblico</p>
+                                </div>
                             </div>
                         </div>
                         <div class="coluna-mapa">
                             <div class="map-box">
-                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3596.883733000!2d-49.310156!3d-25.658572!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94dcf9f9f9f9f9f9%3A0x9f9f9f9f9f9f9f9f!2zUnVhIENhc3N1YXJpbmEsIDIxOSAtIEV1Y2FsaXB0b3MsIEZhemVuZGEgUmlvIEdyYW5kZSAtIFBS!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr" width="100%" height="400" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy"></iframe>
-                                <p class="endereco-texto"><strong>Sede FRG:</strong> Rua Cassuarina, 219 - Eucaliptos</p>
+                                <iframe
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3596.883733000!2d-49.310156!3d-25.658572!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94dcf9f9f9f9f9f9%3A0x9f9f9f9f9f9f9f9f!2zUnVhIENhc3N1YXJpbmEsIDIxOSAtIEV1Y2FsaXB0b3MsIEZhemVuZGEgUmlvIEdyYW5kZSAtIFBS!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr"
+                                    width="100%" height="400" style="border:0; border-radius: 12px;" allowfullscreen=""
+                                    loading="lazy"></iframe>
+                                <p class="endereco-texto"><strong>Sede FRG:</strong> Rua Cassuarina, 219 - Eucaliptos
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -135,13 +268,21 @@
                         <div class="coluna-agenda">
                             <h3 class="titulo-coluna">Tijucas</h3>
                             <div class="grid-cultos">
-                                <div class="card"><h3>Domingo</h3><p class="horario">19:00</p><p class="nome-culto">Culto da Família</p></div>
+                                <div class="card">
+                                    <h3>Domingo</h3>
+                                    <p class="horario">19:00</p>
+                                    <p class="nome-culto">Culto da Família</p>
+                                </div>
                             </div>
                         </div>
                         <div class="coluna-mapa">
                             <div class="map-box">
-                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3545.24584!2d-48.6346!3d-27.2415!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94d896!2sRua%20Ant%C3%B4nio%20Leal%2C%2061%2C%20Tijucas%20-%20SC!5e0!3m2!1spt-BR!2sbr!4v1700000000001" width="100%" height="400" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy"></iframe>
-                                <p class="endereco-texto"><strong>Unidade SC:</strong> Rua Antônio Leal, 61 - Tijucas</p>
+                                <iframe
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3545.24584!2d-48.6346!3d-27.2415!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94d896!2sRua%20Ant%C3%B4nio%20Leal%2C%2061%2C%20Tijucas%20-%20SC!5e0!3m2!1spt-BR!2sbr!4v1700000000001"
+                                    width="100%" height="400" style="border:0; border-radius: 12px;" allowfullscreen=""
+                                    loading="lazy"></iframe>
+                                <p class="endereco-texto"><strong>Unidade SC:</strong> Rua Antônio Leal, 61 - Tijucas
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -159,7 +300,8 @@
                     <form id="formOracao">
                         <div class="input-group">
                             <label for="textoOracao">Seu Pedido</label>
-                            <textarea id="textoOracao" rows="5" required placeholder="Escreva seu pedido aqui..."></textarea>
+                            <textarea id="textoOracao" rows="5" required
+                                placeholder="Escreva seu pedido aqui..."></textarea>
                         </div>
                         <button type="submit" class="btn-enviar">Enviar Pedido ao Firebase</button>
                     </form>
