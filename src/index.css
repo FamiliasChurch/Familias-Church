@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primaria: #163a30;
+  --color-destaque: #d4a373;
+  --color-background: #060e0c;
+
+  /* Garantimos que o sistema use as fontes carregadas com fallback seguro */
+  --font-display: "Smooch Sans", "Inter", system-ui, sans-serif;
+  --font-body: "Raleway", "Inter", system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    /* Usamos font-body (Raleway) com peso normal para textos longos */
+    @apply bg-background text-white antialiased font-body font-normal;
+  }
+
+  /* AJUSTE DOS TÍTULOS (AQUI ESTAVA O PROBLEMA) */
+  h1, h2, .font-display {
+    /* Mudamos de tracking-tighter para tracking-normal ou tight */
+    @apply font-display tracking-tight leading-[0.9] uppercase;
+    /* Evita que o navegador 'engrosse' a letra artificialmente */
+    font-weight: 800; 
+  }
+
+  /* Subtítulos e parágrafos precisam de mais espaço para não 'colar' */
+  p {
+    @apply tracking-wide leading-relaxed;
+  }
+}
+
+.glass {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+}
+
+.text-gradient {
+  @apply bg-gradient-to-br from-white to-destaque bg-clip-text text-transparent;
+}
