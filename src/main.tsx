@@ -1,21 +1,21 @@
-// Main.tsx
 import { StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.tsx'
 
-// Definindo o componente que gerencia o estado de login
 const Root = () => {
   const [role, setRole] = useState("Visitante");
   const [name, setName] = useState("Convidado");
 
   useEffect(() => {
-    // @ts-ignore (O script do Netlify está no index.html)
+    // @ts-ignore
     const netlifyIdentity = window.netlifyIdentity;
+
+    // Verificação de segurança: garante que o script carregou
+    if (!netlifyIdentity) return;
 
     const updateUserInfo = (user: any) => {
       if (user) {
-        // Pegamos o cargo definido no 'metadata' do Netlify Identity
+        // RBAC: Extrai o cargo do metadado do Netlify
         const userRole = user.app_metadata?.roles?.[0] || "Membro";
         setRole(userRole);
         setName(user.user_metadata?.full_name || "Usuário");
@@ -24,17 +24,14 @@ const Root = () => {
       }
     };
 
-    // Verifica usuário atual ao carregar a página
     updateUserInfo(netlifyIdentity.currentUser());
 
-    // Escuta eventos de login/logout
     netlifyIdentity.on('login', (user: any) => updateUserInfo(user));
     netlifyIdentity.on('logout', () => updateUserInfo(null));
   }, []);
 
   return (
     <StrictMode>
-      <App userRole={role} userName={name} />
     </StrictMode>
   );
 };
