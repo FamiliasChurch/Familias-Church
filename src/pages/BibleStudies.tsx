@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import { db } from "../lib/firebase";
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "firebase/firestore";
-import { BookOpen, PenTool, Calendar, User, Tag, Send } from "lucide-react";
+import { BookOpen, PenTool, Calendar, User, Send, Sparkles, Share2 } from "lucide-react";
 
 export default function BibleStudies({ userRole, userName }: { userRole: string, userName: string }) {
   const [estudos, setEstudos] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // Estados do Formulário
   const [titulo, setTitulo] = useState("");
   const [conteudo, setConteudo] = useState("");
   const [categoria, setCategoria] = useState("Devocional");
@@ -23,7 +21,7 @@ export default function BibleStudies({ userRole, userName }: { userRole: string,
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!titulo || !conteudo) return;
-    
+
     setLoading(true);
     try {
       await addDoc(collection(db, "estudos_biblicos"), {
@@ -35,108 +33,128 @@ export default function BibleStudies({ userRole, userName }: { userRole: string,
       });
       setTitulo("");
       setConteudo("");
-      alert("Palavra publicada com sucesso!");
     } catch (err) {
-      alert("Erro ao publicar estudo.");
+      console.error("Erro ao publicar:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Verifica se o cargo atual permite postar
   const podePostar = ["Pastor", "Apóstolo", "Dev"].includes(userRole);
 
   return (
     <div className="min-h-screen bg-background p-6 pt-32 text-white font-body">
-      <div className="container mx-auto space-y-16">
-        
-        {/* HEADER */}
-        <div className="text-center space-y-4">
-          <h1 className="font-display text-7xl md:text-8xl tracking-tighter text-gradient leading-none">Estudos & <br/>Devocionais</h1>
-          <p className="text-white/40 uppercase tracking-[0.4em] text-[10px] font-bold italic">Alimento diário para a Família Church</p>
+      <div className="container mx-auto space-y-20">
+
+        <div className="text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-destaque/10 border border-destaque/20 text-destaque text-[10px] font-black uppercase tracking-[0.3em]">
+            <Sparkles size={12} /> Alimento Espiritual
+          </div>
+          <h1 className="font-display text-7xl md:text-9xl tracking-tighter text-gradient leading-[0.8]">Estudos &<br/>Devocionais</h1>
         </div>
 
-        {/* ÁREA DE CRIAÇÃO (SÓ PARA LIDERANÇA) */}
         {podePostar && (
-          <section className="max-w-4xl mx-auto">
-            <div className="glass p-10 rounded-[3rem] border border-destaque/20 space-y-8">
-              <div className="flex items-center gap-4">
-                <PenTool className="text-destaque" />
-                <h2 className="text-2xl font-bold uppercase tracking-widest">Nova Publicação</h2>
+          <section className="max-w-3xl mx-auto transform hover:scale-[1.01] transition-transform">
+            <div className="glass p-12 rounded-[4rem] border border-destaque/20 shadow-glow space-y-10">
+              <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                <PenTool className="text-destaque" size={28} />
+                <h2 className="text-3xl font-black uppercase tracking-tighter">Liberar uma Palavra</h2>
               </div>
-              
-              <form onSubmit={handlePost} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <input 
-                    value={titulo} 
-                    onChange={(e) => setTitulo(e.target.value)}
-                    placeholder="Título do Estudo" 
-                    className="glass p-4 rounded-2xl outline-none focus:border-destaque/50 w-full" 
-                    required 
-                  />
-                  <select 
-                    value={categoria} 
-                    onChange={(e) => setCategoria(e.target.value)}
-                    className="glass p-4 rounded-2xl outline-none focus:border-destaque/50 w-full text-white/60"
-                  >
-                    <option value="Devocional">Devocional Diário</option>
-                    <option value="Estudo">Estudo Bíblico Profundo</option>
-                    <option value="Palavra">Palavra Profética</option>
-                  </select>
+
+              <form onSubmit={handlePost} className="space-y-8">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <p className="text-[10px] uppercase font-bold text-white/30 ml-2">Título da Mensagem</p>
+                    <input 
+                      value={titulo} onChange={(e) => setTitulo(e.target.value)}
+                      placeholder="Ex: A Graça que nos Sustenta" 
+                      className="glass p-5 rounded-2xl outline-none focus:border-destaque/50 w-full text-lg" 
+                      required 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[10px] uppercase font-bold text-white/30 ml-2">Categoria</p>
+                    <select 
+                      value={categoria} onChange={(e) => setCategoria(e.target.value)}
+                      className="glass p-5 rounded-2xl outline-none focus:border-destaque/50 w-full text-white/60 appearance-none"
+                    >
+                      <option value="Devocional">Devocional Diário</option>
+                      <option value="Estudo">Estudo Bíblico</option>
+                      <option value="Palavra">Palavra Profética</option>
+                    </select>
+                  </div>
                 </div>
-                
-                <textarea 
-                  value={conteudo} 
-                  onChange={(e) => setConteudo(e.target.value)}
-                  placeholder="Escreva a mensagem aqui..." 
-                  rows={6}
-                  className="w-full glass p-6 rounded-3xl outline-none focus:border-destaque/50 resize-none"
-                  required
-                />
+
+                <div className="space-y-2">
+                  <p className="text-[10px] uppercase font-bold text-white/30 ml-2">Conteúdo da Revelação</p>
+                  <textarea 
+                    value={conteudo} onChange={(e) => setConteudo(e.target.value)}
+                    placeholder="O que o Espírito diz à igreja hoje?" 
+                    rows={8}
+                    className="w-full glass p-8 rounded-[2.5rem] outline-none focus:border-destaque/50 resize-none leading-relaxed"
+                    required
+                  />
+                </div>
 
                 <button 
                   disabled={loading}
-                  className="w-full bg-white text-primaria py-4 rounded-full font-black uppercase text-xs tracking-widest hover:scale-[1.02] transition-transform flex items-center justify-center gap-3"
+                  className="w-full bg-destaque text-primaria py-5 rounded-full font-black uppercase text-sm tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-4 shadow-xl"
                 >
-                  <Send size={16} /> {loading ? "PUBLICANDO..." : "PUBLICAR NO FEED"}
+                  {loading ? (
+                    <div className="h-5 w-5 border-2 border-primaria/30 border-t-primaria rounded-full animate-spin" />
+                  ) : (
+                    <> <Send size={18} /> PUBLICAR NO FEED </>
+                  )}
                 </button>
               </form>
             </div>
           </section>
         )}
 
-        {/* FEED DE CONTEÚDO */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {estudos.map((estudo) => (
-            <article key={estudo.id} className="glass p-10 rounded-[3rem] border border-white/5 flex flex-col justify-between group hover:border-destaque/30 transition-all">
-              <div className="space-y-6">
+            <article key={estudo.id} className="glass p-12 rounded-[4rem] border border-white/5 flex flex-col justify-between group hover:bg-white/[0.02] transition-all">
+              <div className="space-y-8">
                 <div className="flex justify-between items-center">
-                  <span className="bg-destaque/10 text-destaque px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-                    {estudo.categoria}
-                  </span>
-                  <div className="flex items-center gap-2 text-white/30 text-[10px]">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-destaque/10 flex items-center justify-center">
+                      <BookOpen size={20} className="text-destaque" />
+                    </div>
+                    <span className="bg-white/5 text-white/40 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/5">
+                      {estudo.categoria}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white/20 text-[10px] font-bold">
                     <Calendar size={12} />
-                    {estudo.data?.toDate().toLocaleDateString('pt-BR')}
+                    {estudo.data ? estudo.data.toDate().toLocaleDateString('pt-BR') : 'Postando...'}
                   </div>
                 </div>
-                
-                <h3 className="text-3xl font-bold leading-tight group-hover:text-destaque transition-colors">
+
+                <h3 className="text-4xl font-black leading-none tracking-tighter group-hover:text-destaque transition-colors uppercase">
                   {estudo.titulo}
                 </h3>
-                
-                <p className="text-white/60 leading-relaxed line-clamp-4 italic">
-                  {estudo.conteudo}
+
+                <p className="text-white/50 leading-relaxed text-lg line-clamp-5 font-light italic">
+                  "{estudo.conteudo}"
                 </p>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-3 text-white/40">
-                  <User size={14} className="text-destaque" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">{estudo.autor}</span>
+              <div className="mt-12 pt-8 border-t border-white/5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-destaque flex items-center justify-center text-primaria font-black text-[10px]">
+                    {estudo.autor?.substring(0, 1)}
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-destaque leading-none">{estudo.autor}</p>
+                    <p className="text-[8px] text-white/20 uppercase tracking-tighter">Autor da Mensagem</p>
+                  </div>
                 </div>
-                <button className="text-destaque text-[10px] font-black uppercase tracking-widest hover:underline">
-                  Ler Completo
-                </button>
+                <div className="flex gap-4">
+                  <button className="text-white/20 hover:text-white transition-colors"><Share2 size={16} /></button>
+                  <button className="text-destaque text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform">
+                    Ler Estudo Completo
+                  </button>
+                </div>
               </div>
             </article>
           ))}
