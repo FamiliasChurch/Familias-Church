@@ -144,7 +144,7 @@ export default function AdminDashboard() {
              <AuditPanel totalAtivo={totalFinancas} />
 
              {/* 2. Lista de Operação: Aprovação de sementes pendentes */}
-             <AdminAudit />
+             <AdminAudit userRole={user.cargo} />
           </div>
         )}
 
