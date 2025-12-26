@@ -10,6 +10,7 @@ import BibleStudies from "./pages/BibleStudies";
 import EventsManagement from "./pages/EventsManagement";
 import MinistriesManagement from "./pages/MinistriesManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
+import MembersManagement from "./pages/MembersManagement"; // Faltava esta linha!
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -31,7 +32,7 @@ export default function App({ userRole, userName }: AppProps) {
       <Routes>
         {/* ROTA PAI: O Layout envolve tudo que está dentro dele */}
         <Route path="/" element={<Layout userRole={userRole} userName={userName} />}>
-          
+
           <Route index element={<Home />} />
           <Route path="doacoes" element={<Donations />} />
 
@@ -65,7 +66,11 @@ export default function App({ userRole, userName }: AppProps) {
               <EventsManagement userRole={userRole} />
             </ProtectedRoute>
           } />
-
+          <Route path="gestao-membros" element={
+            <ProtectedRoute userRole={userRole} allowedRoles={["Apóstolo", "Dev"]}>
+              <MembersManagement />
+            </ProtectedRoute>
+          } />
           <Route path="gestao-ministerios" element={
             <ProtectedRoute userRole={userRole} allowedRoles={["Mídia", "Apóstolo", "Dev"]}>
               <MinistriesManagement userRole={userRole} />

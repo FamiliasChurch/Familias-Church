@@ -19,28 +19,41 @@ const Root = () => {
     }
 
     const fetchUserDataFromFirestore = async (user: any) => {
-      setLoading(true);
-      if (user) {
-        try {
-          const { doc, getDoc } = await import("firebase/firestore");
-          const { db } = await import("./lib/firebase");
-          const userDoc = await getDoc(doc(db, "contas_acesso", user.email));
+  setLoading(true);
+  if (user) {
+    try {
+      // Adicionado setDoc e serverTimestamp para a automação
+      const { doc, getDoc, setDoc, serverTimestamp } = await import("firebase/firestore");
+      const { db } = await import("./lib/firebase");
 
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            setRole(data.cargo || "Membro");
-            setName(data.nome || user.user_metadata?.full_name);
-          } else {
-            setRole("Membro");
-            setName(user.user_metadata?.full_name || "Usuário");
-          }
-          setShowWelcome(true); // Ativa o alerta após carregar os dados reais
-        } catch (error) {
-          console.error("Erro ao buscar no banco:", error);
-        }
+      const userDocRef = doc(db, "contas_acesso", user.email);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        setRole(data.cargo || "Membro");
+        setName(data.nome || user.user_metadata?.full_name);
+      } else {
+        // AUTOMAÇÃO: Cria o perfil automaticamente se for o primeiro acesso
+        const novoPerfil = {
+          nome: user.user_metadata?.full_name || "Novo Membro",
+          cargo: "Membro",
+          email: user.email,
+          dataCadastro: serverTimestamp()
+        };
+
+        await setDoc(userDocRef, novoPerfil);
+        
+        setRole("Membro");
+        setName(novoPerfil.nome);
       }
-      setLoading(false);
-    };
+      setShowWelcome(true);
+    } catch (error) {
+      console.error("Erro na sincronização de perfil:", error);
+    }
+  }
+  setLoading(false);
+};
 
     fetchUserDataFromFirestore(netlifyIdentity.currentUser());
     netlifyIdentity.on('login', (user: any) => fetchUserDataFromFirestore(user));

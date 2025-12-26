@@ -1,31 +1,36 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Bell, LogOut, Shield } from "lucide-react";
+import { Menu, X, Bell, LogOut, Shield, UserPlus, Search } from "lucide-react";
 import logoIgreja from "../assets/logo.jpg"; 
 import fotoApostolo from "../assets/Ap.jpg";
 
 export default function Header({ userRole, userName }: { userRole: string, userName: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [menuAberto, setMenuAberto] = useState(false);
-  const navigate = useNavigate(); // Hook para redirecionamento
+  const [isOpen, setIsOpen] = useState(false); // Menu Mobile
+  const [menuAberto, setMenuAberto] = useState(false); // Dropdown Perfil
+  const navigate = useNavigate();
+
+  const abrirLogin = () => {
+    // @ts-ignore
+    window.netlifyIdentity.open(); 
+    setMenuAberto(false);
+  };
 
   const handleLogout = () => {
-    // @ts-ignore - Acessa o widget do Netlify carregado no index.html
+    // @ts-ignore
     const netlifyIdentity = window.netlifyIdentity;
-    
     if (netlifyIdentity) {
-      netlifyIdentity.logout(); // Limpa a sessão no Netlify
+      netlifyIdentity.logout();
       setMenuAberto(false);
-      navigate("/"); // Redireciona para a Home
+      navigate("/");
     }
   };
 
   const navLinks = [
-    { name: "Início", href: "#inicio", isRoute: false },
-    { name: "Cultos", href: "#cultos", isRoute: false },
-    { name: "Ministérios", href: "#ministerios", isRoute: false },
-    { name: "Quem Somos", href: "#sobre", isRoute: false },
-    { name: "Eventos", href: "#eventos", isRoute: false },
+    { name: "Início", href: "/#inicio", isRoute: true },
+    { name: "Cultos", href: "/#cultos", isRoute: true },
+    { name: "Ministérios", href: "/#ministerios", isRoute: true },
+    { name: "Quem Somos", href: "/#sobre", isRoute: true },
+    { name: "Eventos", href: "/#eventos", isRoute: true },
     { name: "Doações", href: "/doacoes", isRoute: true },
   ];
 
@@ -35,110 +40,86 @@ export default function Header({ userRole, userName }: { userRole: string, userN
         
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-3">
-          <img 
-            src={logoIgreja} 
-            alt="Logo Famílias Church" 
-            className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-destaque object-cover" 
-          />
-          <span className="font-display text-2xl md:text-3xl font-bold tracking-tight hidden sm:block">
-            FAMÍLIAS CHURCH
-          </span>
+          <img src={logoIgreja} className="w-10 h-10 rounded-full border-2 border-destaque object-cover" alt="Logo" />
+          <span className="font-display text-2xl font-bold hidden sm:block uppercase tracking-tighter">FAMÍLIAS CHURCH</span>
         </Link>
 
         {/* MENU DESKTOP */}
         <nav className="hidden lg:flex items-center gap-8">
-          <ul className="flex gap-6 text-[11px] font-bold tracking-[0.2em] uppercase text-white/70">
+          <ul className="flex gap-6 text-[11px] font-bold uppercase tracking-widest text-white/70">
             {navLinks.map((link) => (
               <li key={link.name}>
-                {link.isRoute ? (
-                  <Link to={link.href} className="hover:text-destaque transition-colors">
-                    {link.name}
-                  </Link>
-                ) : (
-                  <a href={link.href} className="hover:text-destaque transition-colors">
-                    {link.name}
-                  </a>
-                )}
+                <Link to={link.href} className="hover:text-destaque transition-colors">{link.name}</Link>
               </li>
             ))}
           </ul>
 
           <div className="flex items-center gap-4 pl-4 border-l border-white/10 relative">
-            <button className="text-destaque hover:scale-110 transition-transform">
-              <Bell size={20} />
-            </button>
+            <button className="text-destaque hover:scale-110 transition-transform"><Bell size={20} /></button>
             
-            {/* BOTÃO PERFIL */}
+            {/* BOTÃO PERFIL DINÂMICO */}
             <button 
-              onClick={() => setMenuAberto(!menuAberto)}
-              className="border-2 border-destaque rounded-full p-0.5 overflow-hidden w-9 h-9"
+              onClick={() => setMenuAberto(!menuAberto)} 
+              className="border-2 border-destaque rounded-full p-0.5 w-10 h-10 overflow-hidden hover:shadow-[0_0_15px_rgba(var(--destaque-rgb),0.3)] transition-all"
             >
               <img 
-                src={fotoApostolo} 
+                src={userName === "Convidado" ? "https://www.w3schools.com/howto/img_avatar.png" : fotoApostolo} 
                 className="w-full h-full object-cover rounded-full" 
-                alt="Perfil" 
+                alt="Perfil"
               />
             </button>
 
-            {/* DROPDOWN PERFIL */}
+            {/* DROPDOWN */}
             {menuAberto && (
-              <div className="absolute right-0 top-12 w-64 glass p-6 rounded-[2rem] border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-200 z-50">
-                <p className="text-[10px] uppercase font-black text-destaque tracking-widest mb-1">{userRole}</p>
-                <p className="font-display text-xl leading-none mb-4">{userName}</p>
-                
-                <div className="space-y-2 border-t border-white/5 pt-4">
-                  {["Dev", "Apóstolo", "Tesoureira"].includes(userRole) && (
-                    <Link 
-                      to="/admin" 
-                      onClick={() => setMenuAberto(false)}
-                      className="flex items-center gap-3 text-xs uppercase font-bold hover:text-destaque transition-colors"
+              <div className="absolute right-0 top-14 w-64 glass p-6 rounded-[2.5rem] border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-200 z-50">
+                {userName === "Convidado" ? (
+                  <div className="text-center space-y-4">
+                    <p className="text-[10px] uppercase font-black text-white/40 tracking-widest">Acesso Restrito</p>
+                    <button 
+                      onClick={abrirLogin}
+                      className="w-full bg-destaque text-black py-4 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-105 transition-all"
                     >
-                      <Shield size={14} /> Painel Administrativo
-                    </Link>
-                  )}
-                  {/* BOTÃO SAIR ATUALIZADO */}
-                  <button 
-                    onClick={handleLogout}
-                    className="flex items-center gap-3 text-xs uppercase font-bold hover:text-red-400 transition-colors w-full text-left"
-                  >
-                    <LogOut size={14} /> Sair
-                  </button>
-                </div>
+                      <UserPlus size={14} /> Entrar / Cadastrar
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-[10px] uppercase font-black text-destaque tracking-widest mb-1">{userRole}</p>
+                    <p className="font-display text-xl leading-none mb-4 truncate">{userName}</p>
+                    <div className="space-y-3 border-t border-white/5 pt-4">
+                      {["Dev", "Apóstolo", "Tesoureira"].includes(userRole) && (
+                        <Link to="/admin" onClick={() => setMenuAberto(false)} className="flex items-center gap-3 text-xs font-bold hover:text-destaque uppercase">
+                          <Shield size={14} /> Painel Administrativo
+                        </Link>
+                      )}
+                      <button onClick={handleLogout} className="flex items-center gap-3 text-xs font-bold hover:text-red-400 uppercase w-full text-left transition-colors">
+                        <LogOut size={14} /> Sair do Sistema
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
         </nav>
 
-        {/* BOTÃO MOBILE */}
+        {/* MOBILE TRIGGER */}
         <button className="lg:hidden text-destaque" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X size={32} /> : <Menu size={32} />}
         </button>
       </div>
 
-      {/* MENU MOBILE */}
+      {/* MOBILE MENU */}
       {isOpen && (
-        <div className="absolute top-20 left-0 w-full glass flex flex-col items-center py-10 gap-6 lg:hidden animate-in slide-in-from-top duration-300">
+        <div className="absolute top-20 left-0 w-full glass py-10 flex flex-col items-center gap-6 lg:hidden animate-in slide-in-from-top duration-300">
           {navLinks.map((link) => (
-            link.isRoute ? (
-              <Link
-                key={link.name}
-                to={link.href}
-                className="text-lg font-bold uppercase tracking-widest"
-                onClick={() => setIsOpen(false)}
-              >
-                {link.name}
-              </Link>
-            ) : (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-lg font-bold uppercase tracking-widest"
-                onClick={() => setIsOpen(false)}
-              >
-                {link.name}
-              </a>
-            )
+            <Link key={link.name} to={link.href} onClick={() => setIsOpen(false)} className="text-lg font-bold uppercase tracking-widest hover:text-destaque">
+              {link.name}
+            </Link>
           ))}
+          <button onClick={abrirLogin} className="mt-4 text-destaque uppercase font-black text-xs tracking-widest">
+            {userName === "Convidado" ? "Entrar na Conta" : `Logado como ${userName}`}
+          </button>
         </div>
       )}
     </header>
