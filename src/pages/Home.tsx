@@ -6,8 +6,6 @@ import {
     Quote, Send, DollarSign, Star, Church, Play, Menu, X
 } from "lucide-react";
 
-// Sub-componente de Header para organização
-import Header from "../components/header";
 
 export default function Home() {
     const [activeTab, setActiveTab] = useState(0);
@@ -40,7 +38,6 @@ export default function Home() {
 
     return (
         <div className="min-h-screen bg-background text-white font-body selection:bg-destaque/30">
-            <Header />
 
             <main id="inicio">
                 {/* 1. HERO */}

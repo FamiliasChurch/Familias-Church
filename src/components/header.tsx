@@ -1,28 +1,39 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, Bell} from "lucide-react";
-// 1. O Vite vai gerenciar esse caminho automaticamente no build
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, Bell, LogOut, Shield } from "lucide-react";
 import logoIgreja from "../assets/logo.jpg"; 
 import fotoApostolo from "../assets/Ap.jpg";
 
-export default function Header() {
+export default function Header({ userRole, userName }: { userRole: string, userName: string }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [menuAberto, setMenuAberto] = useState(false);
+  const navigate = useNavigate(); // Hook para redirecionamento
 
-  // Use caminhos relativos para as âncoras (#) e Link para as rotas
+  const handleLogout = () => {
+    // @ts-ignore - Acessa o widget do Netlify carregado no index.html
+    const netlifyIdentity = window.netlifyIdentity;
+    
+    if (netlifyIdentity) {
+      netlifyIdentity.logout(); // Limpa a sessão no Netlify
+      setMenuAberto(false);
+      navigate("/"); // Redireciona para a Home
+    }
+  };
+
   const navLinks = [
     { name: "Início", href: "#inicio", isRoute: false },
     { name: "Cultos", href: "#cultos", isRoute: false },
     { name: "Ministérios", href: "#ministerios", isRoute: false },
     { name: "Quem Somos", href: "#sobre", isRoute: false },
     { name: "Eventos", href: "#eventos", isRoute: false },
-    { name: "Doações", href: "/doacoes", isRoute: true }, // Rota interna
+    { name: "Doações", href: "/doacoes", isRoute: true },
   ];
 
   return (
     <header className="fixed top-0 w-full z-50 glass h-20 flex items-center border-b border-white/5">
       <div className="container mx-auto px-6 flex justify-between items-center">
         
-        {/* LOGO - Agora usando a variável importada */}
+        {/* LOGO */}
         <Link to="/" className="flex items-center gap-3">
           <img 
             src={logoIgreja} 
@@ -52,18 +63,49 @@ export default function Header() {
             ))}
           </ul>
 
-          {/* ICONES DE CONTROLE */}
-          <div className="flex items-center gap-4 pl-4 border-l border-white/10">
+          <div className="flex items-center gap-4 pl-4 border-l border-white/10 relative">
             <button className="text-destaque hover:scale-110 transition-transform">
               <Bell size={20} />
             </button>
-            <Link to="/admin" className="border-2 border-destaque rounded-full p-0.5">
+            
+            {/* BOTÃO PERFIL */}
+            <button 
+              onClick={() => setMenuAberto(!menuAberto)}
+              className="border-2 border-destaque rounded-full p-0.5 overflow-hidden w-9 h-9"
+            >
               <img 
-                src="https://www.w3schools.com/howto/img_avatar.png" 
-                className="w-8 h-8 rounded-full" 
+                src={fotoApostolo} 
+                className="w-full h-full object-cover rounded-full" 
                 alt="Perfil" 
               />
-            </Link>
+            </button>
+
+            {/* DROPDOWN PERFIL */}
+            {menuAberto && (
+              <div className="absolute right-0 top-12 w-64 glass p-6 rounded-[2rem] border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-200 z-50">
+                <p className="text-[10px] uppercase font-black text-destaque tracking-widest mb-1">{userRole}</p>
+                <p className="font-display text-xl leading-none mb-4">{userName}</p>
+                
+                <div className="space-y-2 border-t border-white/5 pt-4">
+                  {["Dev", "Apóstolo", "Tesoureira"].includes(userRole) && (
+                    <Link 
+                      to="/admin" 
+                      onClick={() => setMenuAberto(false)}
+                      className="flex items-center gap-3 text-xs uppercase font-bold hover:text-destaque transition-colors"
+                    >
+                      <Shield size={14} /> Painel Administrativo
+                    </Link>
+                  )}
+                  {/* BOTÃO SAIR ATUALIZADO */}
+                  <button 
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 text-xs uppercase font-bold hover:text-red-400 transition-colors w-full text-left"
+                  >
+                    <LogOut size={14} /> Sair
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </nav>
 
@@ -73,7 +115,7 @@ export default function Header() {
         </button>
       </div>
 
-      {/* MENU MOBILE EXPANSÍVEL */}
+      {/* MENU MOBILE */}
       {isOpen && (
         <div className="absolute top-20 left-0 w-full glass flex flex-col items-center py-10 gap-6 lg:hidden animate-in slide-in-from-top duration-300">
           {navLinks.map((link) => (

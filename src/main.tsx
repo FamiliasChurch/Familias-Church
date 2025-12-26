@@ -30,7 +30,6 @@ const Root = () => {
 
   return (
     <StrictMode>
-      {/* VOCÊ PRECISA DISSO AQUI PARA A TELA NÃO FICAR PRETA */}
       <App userRole={role} userName={name} />
     </StrictMode>
   );
